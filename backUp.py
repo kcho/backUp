@@ -100,8 +100,7 @@ def main(args):
         group, timeline = getGroup()
         note = raw_input('\tAny note ? :')
         koreanName = getKoreanName()
-        targetDirectory, maxNum = getTargetLocation(newDirectory, group, subjectInitial, timeline, backUpTo, db_df, 
-
+        targetDirectory, maxNum = getTargetLocation(newDirectory, group, subjectInitial, timeline, backUpTo, db_df)
         new_data_df = modality_depth_add(data_df)    
         newAllDict[newDirectory] = 
         
