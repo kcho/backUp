@@ -15,7 +15,6 @@ import argparse
 import textwrap
 import collections
 import pandas as pd
-import dicom
 import updateSpreadSheet
 import motion_extraction
 import freesurfer
@@ -26,24 +25,31 @@ import getpass
 from paramiko import SSHClient
 from scp import SCPClient
 
+# first dicom search
+import dicom
+import datetime
 
+
+pd.set_option('max_rows',5000)
+pd.set_option('max_columns',5000)
 
 
 def main(args):
     #--------------------------#
     # Initial information      #
     #--------------------------#
-    backUpFrom = args.hddLocation
     backUpTo = args.backupDir
     DataBaseAddress = args.database
 
-    # External HDD log
-    if args.USBlogFile:
-        logFileInUSB = args.USBlogFile
     if args.inputDirs:
+        backUpFrom = False
         logFileInUSB = os.path.join(os.getcwd(),"log.xlsx")
     else:
+        # External HDD log
+        backUpFrom = args.hddLocation
         logFileInUSB = os.path.join(backUpFrom,"log.xlsx")
+
+    logDf = copiedDirectoryCheck(logFileInUSB)
 
     #--------------------------------------------------------------------------------
     # Load previously copied directories
@@ -56,14 +62,11 @@ def main(args):
     #
     #     If there is no new directory --> sys.exit
     #================================================================================
-    logDf=copiedDirectoryCheck(backUpFrom,logFileInUSB)
-    newDirectoryList,logDf=newDirectoryGrep(args.inputDirs, backUpFrom,logDf)
-    
+    newDirectoryList, logDf = newDirectoryGrep(args.inputDirs, backUpFrom, logDf)
     logDf.to_excel(logFileInUSB,'Sheet1')
+
     if newDirectoryList==[]:
         sys.exit('Everything have been backed up !')
-
-
     #--------------------------------------------------------------------------------
     # check the number of images in the new directories
     #--------------------------------------------------------------------------------
@@ -77,10 +80,26 @@ def main(args):
     #     df : pandas dataframe made with the function 'log'
     #          including information about the new subjects
     #================================================================================
-    foundDict=findDtiDkiT1restRest2(newDirectoryList)
+    
+    #foundDict=findDtiDkiT1restRest2(newDirectoryList)
+    allDict = {}
+    for newDirectory in newDirectoryList:
+        allDict[newDirectory] = fileNumberCounter(newDirectory)
 
     #if args.prac:
-    allInfo,df,newDfList=verifyNumbersAndLog(foundDict,backUpTo,backUpFrom,DataBaseAddress)
+    newAllDict = {}
+    for newDirectory, df in allDict.iteritems():
+        subjectInitial, fullname, patientNumber = getName(newDirectory)
+        firstDicom = get_first_dicom('dcm|ima', newDirectory)
+        dicomInfo = getDicomInfoAuto(firstDicom)
+        group, timeline = getGroup()
+        note = raw_input('\tAny note ? :')
+        koreanName = getKoreanName()
+
+        followUp = 
+        newAllDict[newDirectory] = modality_depth_add(df)
+
+    #allInfo,df,newDfList=verifyNumbersAndLog(foundDict,backUpTo,backUpFrom,DataBaseAddress)
     #================================================================================
 
 
@@ -103,6 +122,7 @@ def main(args):
     #writer.save()
 
     #df.to_excel(DataBaseAddress,sheet_name='rearrangeWithId',engine='xlsxwriter')
+
     if args.executeCopy:
         df.to_excel(DataBaseAddress,sheet_name='rearrangeWithId')
 
@@ -239,24 +259,23 @@ def changeencode(data, cols):
     return data
 
 def getDicomInfoAuto(firstDicomAddress):
-    try:
-        df = dicom.read_file(firstDicomAddress)
-        dob = df.PatientBirthDate
-        sex = df.PatientSex
-        pID = df.PatientID
-        date = df.StudyDate
-        age,dob,date = calculate_age2(dob,date)
-        name = df.PatientName
-        return {'name':name,'dob':dob,
-                'sex':sex, 'patientId':pID,
-                'scanDate':date, 'age':age,'dicomRead':df}
-    except:
-        dicom.read_file(firstDicomAddress,force=True)
-        print 'cannot properly read dicom file'
+    df = dicom.read_file(firstDicomAddress)
+    dob = df.PatientBirthDate
+    sex = df.PatientSex
+    pID = df.PatientID
+    date = df.StudyDate
+    age,dob,date = calculate_age2(dob,date)
+    name = df.PatientName
+    return {'name':name,'dob':dob,
+            'sex':sex, 'patientId':pID,
+            'scanDate':date, 'age':age}
+    #except:
+        #dicom.read_file(firstDicomAddress,force=True)
+        #print 'cannot properly read dicom file'
 
 # In[324]:
 
-def copiedDirectoryCheck(backUpFrom,logFileInUSB):
+def copiedDirectoryCheck(logFileInUSB):
     if os.path.isfile(logFileInUSB):
         df = pd.read_excel(logFileInUSB,'Sheet1')
         print 'Log loaded successfully'
@@ -322,6 +341,28 @@ def noCall(logDf,backUpFrom,folderName):
 
 
 # In[326]:
+def fileNumberCounter(directory):
+    fileCounter = {}
+    for root, dirs, files in os.walk(directory):
+        fileCounter[os.path.basename(root)] = [root, 
+                                               len(files), 
+                                               directory, 
+                                               os.path.basename(directory)]
+
+    df = pd.DataFrame.from_dict(fileCounter, orient='index')
+    df.columns = ['root', 'file_number', 'subjectDir', 'subjectName']
+    #df['basename'] = df.index.str.split('/')[-1]
+    print df['file_number']
+    
+    response = raw_input('All check [Y/N] ? : ')
+    if re.search('[yY]|[yY][eE][sS]', response):
+        print 'Check !'
+    else:
+        print 'Exit due to missing modality'
+        sys.exit(0)
+
+    return df
+
 
 def findDtiDkiT1restRest2(newDirectoryList):
     '''
@@ -486,6 +527,7 @@ def getDOB_NOTE():
         note=raw_input('\tAny note ? :')
 
         return birthday,note
+
 
 def getSex():
         sex=raw_input('\tSex ? [ M / F ] : ')
@@ -822,6 +864,64 @@ def walklevel(some_dir, level=1):
         if num_sep + level <= num_sep_this:
             del dirs[:]
 
+def modality_depth_add(df):
+
+    '''
+    Add a modality column to a dataframe.
+    Input dataframe structure
+    -------------------------
+    dataframe index = os.path.basename(root)
+    dataframe.file_number = len(files)
+    dataframe.source = os.path.abspath(root)
+    dataframe.subjectName = 'CHO_KANG_IK_88091612'
+    '''
+
+    # index 
+    #'T2_SPACE_FLAIR_p2_iso':'T2_FLAIR',
+    #'T2_SPACE_1mm_iso':'T2_1mm'
+    modalityNames =  {
+        'DTI_64D_B1K_AP':'DTI_AP_32ch',
+        'REST_FMRI_PHASE_244':'REST_TR_2_32ch',
+        'TFL3D_208_SLAB':'T1',
+        'SCOUT_HEAD_32CH':'scout',
+        'AX_T2_FLAIR_P2':'T2_FLAIR',
+        'AX_T2_TSE_P2':'T2_TSE',
+        'DKI_30D_B-VALUE_NB_06_(3)':'DKI',
+        'DKI_30D_B-VALUE_NB_06_(3)_COLFA':'DKI_COLFA',
+        'DKI_30D_B-VALUE_NB_06_(3)_EXP':'DKI_EXP',
+        'DKI_30D_B-VALUE_NB_06_(3)_FA':'DKI_FA',
+        'DTI_64D_B1K(2)':'DTI',
+        'DTI_64D_B1K(2)_COLFA':'DTI_COLFA',
+        'DTI_64D_B1K(2)_EXP':'DTI_EXP',
+        'DTI_64D_B1K(2)_FA':'DTI_FA',
+        'REST_FMRI_PHASE_116_(1)':'REST',
+        'SCOUT_HEAD_12CH':'scout',
+        'TFL3D_208_SLAB':'T1'
+                    }
+
+    df_reset = df.reset_index()
+
+
+    df_reset['modality'] = df_reset['index'].str[:-5].map(modalityNames)
+    df_reset['depth'] = df_reset['root'].str.split('/').apply(len)
+    df_reset['depth'] = df_reset['depth'] - df_reset['depth'].min()
+
+    df_reset = df_reset.ix[(df_reset.depth > 1)]
+
+    print 'Unmatched modality'
+    print df_reset.ix[(df_reset.modality.isnull())]['index']
+    if raw_input('Check [Y/N] ? :') == Y:
+        return df_reset.set_index('index')
+    
+
+def get_first_dicom(ext,location):
+    for root,dirs,files in os.walk(location):
+        for sFile in files:
+            extension = sFile.split('.')[-1]
+            if re.search(ext,extension,re.IGNORECASE):
+                return os.path.join(root,sFile)
+  
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -846,16 +946,11 @@ if __name__ == '__main__':
         )
 
     parser.add_argument(
-        '-l', '--USBlogFile',
-        help='Location of excel file that contains back up log. Eg) /Volumes/160412/log.xlsx',
-        default=False,
-        )
-
-    parser.add_argument(
         '-b', '--backupDir',
         help='Location of data storage root. Default : "/Volumes/promise/CCNC_MRI_3T"',
         default="/Volumes/CCNC_M2_3/nas_BackUp/CCNC_MRI_3T",
         )
+
     parser.add_argument(
         '-d', '--database',
         help='Location of database file. Default : "/Volumes/promise/CCNC_MRI_3T/database/database.xls"',
