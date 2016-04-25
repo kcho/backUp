@@ -82,22 +82,29 @@ def main(args):
     #================================================================================
     
     #foundDict=findDtiDkiT1restRest2(newDirectoryList)
+    if os.path.isfile(DataBaseAddress):
+        excelFile = pd.ExcelFile(DataBaseAddress)
+        db_df = excelFile.parse(0)
+    else:
+        db_df = make_empty_db_df()
+
     allDict = {}
     for newDirectory in newDirectoryList:
         allDict[newDirectory] = fileNumberCounter(newDirectory)
 
-    #if args.prac:
     newAllDict = {}
-    for newDirectory, df in allDict.iteritems():
+    for newDirectory, data_df in allDict.iteritems():
         subjectInitial, fullname, patientNumber = getName(newDirectory)
         firstDicom = get_first_dicom('dcm|ima', newDirectory)
         dicomInfo = getDicomInfoAuto(firstDicom)
         group, timeline = getGroup()
         note = raw_input('\tAny note ? :')
         koreanName = getKoreanName()
+        targetDirectory, maxNum = getTargetLocation(newDirectory, group, subjectInitial, timeline, backUpTo, db_df, 
 
-        followUp = 
-        newAllDict[newDirectory] = modality_depth_add(df)
+        new_data_df = modality_depth_add(data_df)    
+        newAllDict[newDirectory] = 
+        
 
     #allInfo,df,newDfList=verifyNumbersAndLog(foundDict,backUpTo,backUpFrom,DataBaseAddress)
     #================================================================================
@@ -501,9 +508,8 @@ def maxGroupNum(backUpTo):
 
 
 
-def getTargetLocation(subject,group,timeline,backUpTo,df):
+def getTargetLocation(subject,group, subjInitialtimeline,backUpTo,df):
     maxNum=maxGroupNum(os.path.join(backUpTo,group))
-    subjInitial,fullname,patientNumber=getName(subject)
     target=os.path.join(backUpTo,group)
     if timeline=='baseline':
         targetDirectory='{0}{1}_{2}'.format(group,maxNum,subjInitial)
@@ -512,14 +518,9 @@ def getTargetLocation(subject,group,timeline,backUpTo,df):
         print previousInfo[['DOB','koreanName','subjectName','folderName']]
         if raw_input('\tDoes above contain the same subject information as the current one ? [Y/N] : ').upper() == 'Y':
             previousDir = previousInfo.folderName.values[0]
-            print 'previousDir :', previousDir
-            print 'previousDir :', previousDir
-            print 'previousDir :', previousDir
-            print 'previousDir :', previousDir
-
             targetDirectory=os.path.join(backUpTo,group,previousDir,timeline)
 
-    return target,subjInitial,fullname,patientNumber,targetDirectory,maxNum
+    return targetDirectory,maxNum
 
 
 def getDOB_NOTE():
@@ -920,7 +921,31 @@ def get_first_dicom(ext,location):
             extension = sFile.split('.')[-1]
             if re.search(ext,extension,re.IGNORECASE):
                 return os.path.join(root,sFile)
-  
+
+def make_empty_db_df():
+    df = pd.DataFrame.from_dict({None:
+        {'subjectName':None,
+       'subjectInitial':None,
+       'group':None,
+       'sex':None,
+       'DOB':None,
+       'scanDate':None,
+       'age':None,
+       'timeline':None,
+       'studyname':None,
+       'folderName':None,
+       'T1Number':None,
+       'DTINumber':None,
+       'DKINumber':None,
+       'RESTNumber':None,
+       'note':None,
+       'patientNumber':None,
+       'folderName':None,
+       'backUpBy':None
+       }
+         },orient='index'
+        )
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
