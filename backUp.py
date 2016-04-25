@@ -92,7 +92,7 @@ def main(args):
     for newDirectory in newDirectoryList:
         allDict[newDirectory] = fileNumberCounter(newDirectory)
 
-    newAllDict = {}
+    allInfo = {}
     for newDirectory, data_df in allDict.iteritems():
         subjectInitial, fullname, patientNumber = getName(newDirectory)
         firstDicom = get_first_dicom('dcm|ima', newDirectory)
@@ -101,8 +101,24 @@ def main(args):
         note = raw_input('\tAny note ? :')
         koreanName = getKoreanName()
         targetDirectory, maxNum = getTargetLocation(newDirectory, group, subjectInitial, timeline, backUpTo, db_df)
+
         new_data_df = modality_depth_add(data_df)    
-        newAllDict[newDirectory] = 
+
+        allInfo[newDirectory] = {
+                'koreanName':koreanName,
+                'group':group, 
+                'timeline':timeline, 
+                'dob':dicomInfo['dob'], 
+                'note':note, 
+                'targetDir':targetDirectory, 
+                'sex':dicomInfo['sex'], 
+                'subjectInitial':subjectInitial, 
+                'fullname':fullname, 
+                'subjectNumber':maxNum,
+                'backUpTo':backUpTo, 
+                'backUpFrom':backUpFrom,
+                'dataInfoDf':new_data_df
+                }
         
 
     #allInfo,df,newDfList=verifyNumbersAndLog(foundDict,backUpTo,backUpFrom,DataBaseAddress)
@@ -113,7 +129,7 @@ def main(args):
     # check the number of images in the new directories
     #================================================================================
     if args.executeCopy:
-        executeCopy(allInfo,df,newDfList)
+        executeCopy(allInfo,db_df)
     #individualLog(allInfo,df)
     #================================================================================
 
@@ -154,7 +170,6 @@ def main(args):
     print 'Completed\n'
 
     print allInfo
-    print df
     print newDfList
 
     #--------------------------------------------------------------------------------
@@ -507,7 +522,7 @@ def maxGroupNum(backUpTo):
 
 
 
-def getTargetLocation(subject,group, subjInitialtimeline,backUpTo,df):
+def getTargetLocation(subject,group, subjInitial,timeline,backUpTo,df):
     maxNum=maxGroupNum(os.path.join(backUpTo,group))
     target=os.path.join(backUpTo,group)
     if timeline=='baseline':
@@ -635,7 +650,7 @@ def dicomNumberCheckInDictionary(allModalityWithLocation):
                     aModalityWithLocation[0],len(os.listdir(aModalityWithLocation[1])))
 
 
-def executeCopy(allInfo,df,newDf):
+def executeCopy(allInfo,df):
     #newDf --> {subject:allInfoDf}
     maxNum=0
     #allInfo[subject]=[target,group,followUp,targetDirectory,allModalityWithLocation]
@@ -643,15 +658,15 @@ def executeCopy(allInfo,df,newDf):
     #{'T1':['source','file number'],'DTI':['source','file number']}
 
     backedUpGroups=[]
-    for subject,infoList in allInfo.iteritems():
+    for subject, infoList in allInfo.iteritems():
         print '-----------------'
         print 'Copying',subject
         print '-----------------'
 
         #If it's follow up (the name exists)
         #infoList[-1] : koreanName
-        if infoList[1] != 'baseline':
-            for modality,modalityInfo in infoList[10].iteritems():
+        if infoList['timeline'] != 'baseline':
+            for modality,dataInfoDf in infoList['dataInfoDf'].iteritems():
                 #group + previousdir + follow up period(saved in the variable baseline)
                 modalityTarget=os.path.join(infoList[4],infoList[8])
                 print 'Copying {}'.format(modality)
@@ -910,7 +925,7 @@ def modality_depth_add(df):
 
     print 'Unmatched modality'
     print df_reset.ix[(df_reset.modality.isnull())]['index']
-    if raw_input('Check [Y/N] ? :') == Y:
+    if raw_input('Check [Y/N] ? :') == 'Y':
         return df_reset.set_index('index')
     
 
@@ -972,7 +987,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '-b', '--backupDir',
         help='Location of data storage root. Default : "/Volumes/promise/CCNC_MRI_3T"',
-        default="/Volumes/CCNC_M2_3/nas_BackUp/CCNC_MRI_3T",
+        default="/Volumes/promise/CCNC_MRI_3T",
+
         )
 
     parser.add_argument(
