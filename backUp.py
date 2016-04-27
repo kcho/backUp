@@ -35,9 +35,13 @@ pd.set_option('max_columns',5000)
 
 
 def main(args):
-    #--------------------------#
-    # Initial information      #
-    #--------------------------#
+
+    ######################################################################
+    # Variable settings                                                  #
+    # - backUpTo : location of the CCNC_MRI_3T                           #
+    # - DatabaseAddress : location of the CCNC_MRI_3T database excel     #
+    # - backUpFrom : location of the new data dirname                    #
+    ######################################################################
     backUpTo = args.backupDir
     DataBaseAddress = args.database
 
@@ -45,43 +49,17 @@ def main(args):
         backUpFrom = False
         logFileInUSB = os.path.join(os.getcwd(),"log.xlsx")
     else:
-        # External HDD log
         backUpFrom = args.hddLocation
         logFileInUSB = os.path.join(backUpFrom,"log.xlsx")
 
     logDf = copiedDirectoryCheck(logFileInUSB)
 
-    #--------------------------------------------------------------------------------
-    # Load previously copied directories
-    #--------------------------------------------------------------------------------
-    #     logDf : log saved in external hard drive
-    #     newDirectoryList : recently added directory to the external hard drive
-    #
-    #     If user wants a directory not to be called again,
-    #         logDf is updated with the directory
-    #
-    #     If there is no new directory --> sys.exit
-    #================================================================================
     newDirectoryList, logDf = newDirectoryGrep(args.inputDirs, backUpFrom, logDf)
     logDf.to_excel(logFileInUSB,'Sheet1')
 
     if newDirectoryList==[]:
         sys.exit('Everything have been backed up !')
-    #--------------------------------------------------------------------------------
-    # check the number of images in the new directories
-    #--------------------------------------------------------------------------------
-    #     foundDict : {newDirName:{modalityName:modalitySource,fileNumber}}
-    #
-    #     allInfo : {newDirName:[group,followUp,birthday,note,target,
-    #                            subjInitial,fullname,subjNum,targetDirectory,sex,
-    #                            allModalityWithLocation,maxNum,backUpTo,backUpFrom,
-    #                            koreanName]
-    #
-    #     df : pandas dataframe made with the function 'log'
-    #          including information about the new subjects
-    #================================================================================
-    
-    #foundDict=findDtiDkiT1restRest2(newDirectoryList)
+
     if os.path.isfile(DataBaseAddress):
         excelFile = pd.ExcelFile(DataBaseAddress)
         db_df = excelFile.parse(0)
@@ -102,24 +80,25 @@ def main(args):
         koreanName = getKoreanName()
         targetDirectory, maxNum = getTargetLocation(newDirectory, group, subjectInitial, timeline, backUpTo, db_df)
 
-        new_data_df = modality_depth_add(data_df)    
+        new_data_df = modality_depth_add(data_df)
 
         allInfo[newDirectory] = {
                 'koreanName':koreanName,
-                'group':group, 
-                'timeline':timeline, 
-                'dob':dicomInfo['dob'], 
-                'note':note, 
-                'targetDir':targetDirectory, 
-                'sex':dicomInfo['sex'], 
-                'subjectInitial':subjectInitial, 
-                'fullname':fullname, 
+                'group':group,
+                'timeline':timeline,
+                'dob':dicomInfo['dob'],
+                'note':note,
+                'targetDir':targetDirectory,
+                'sex':dicomInfo['sex'],
+                'subjectInitial':subjectInitial,
+                'fullname':fullname,
                 'subjectNumber':maxNum,
-                'backUpTo':backUpTo, 
+                'backUpTo':backUpTo,
                 'backUpFrom':backUpFrom,
                 'dataInfoDf':new_data_df
                 }
-        
+
+    return allInfo, db_df
 
     #allInfo,df,newDfList=verifyNumbersAndLog(foundDict,backUpTo,backUpFrom,DataBaseAddress)
     #================================================================================
@@ -130,34 +109,15 @@ def main(args):
     #================================================================================
     if args.executeCopy:
         executeCopy(allInfo,db_df)
-    #individualLog(allInfo,df)
-    #================================================================================
+        df.to_excel(DataBaseAddress, sheet_name='rearrangeWithId')
 
-
-    #--------------------------------------------------------------------------------
-    # Update the database excel and log in the external hard-drive
-    #================================================================================
-
-    #df = changeencode(df,['koreanName','note'])
-    #writer = pd.ExcelWriter(DataBaseAddress)
-    #df.to_excel(DataBaseAddress,sheet_name='rearrangeWithId',engine='xlsxwriter')
-    #writer.save()
-
-    #df.to_excel(DataBaseAddress,sheet_name='rearrangeWithId',engine='xlsxwriter')
-
-    if args.executeCopy:
-        df.to_excel(DataBaseAddress,sheet_name='rearrangeWithId')
-
-        for dirName,value in allInfo.iteritems():
-            logDf = noCall(logDf,backUpFrom,dirName)
-            logDf.to_excel(logFileInUSB,'Sheet1')
-    #================================================================================
-
+        for dirName, value in allInfo.iteritems():
+            logDf = noCall(logDf, backUpFrom, dirName)
+            logDf.to_excel(logFileInUSB, 'Sheet1')
 
     #--------------------------------------------------------------------------------
-    # Update the database excel for CCNC
+    # Update the database excel for other CCNC teams
     #================================================================================
-
     if args.executeCopy:
         class spreadsheetInput():
             def __init__(self):
@@ -170,7 +130,7 @@ def main(args):
     print 'Completed\n'
 
     print allInfo
-    print newDfList
+    #print newDfList
 
     #--------------------------------------------------------------------------------
     # link motion_extraction
@@ -178,13 +138,13 @@ def main(args):
     #                   subjInitial,fullname,subjNum,targetDirectory,
     #                   sex,allModalityWithLocation,maxNum,
     #                   backUpTo,backUpFrom,koreanName]
-    # ['NOR', 'baseline', '1988-09-16', 'ha', 
-    # '/Volumes/promise/CCNC_MRI_3T/NOR', 'CKI', 'ChoKangIk', 
-    # '88091612', 'NOR96_CKI', 'M', 
-    # {'DTI': ['/Volumes/20141013/CHO_KANG_IK_88091612/RESEARCH_STUDY_RESEARCH_STUDY_20150807_173318_875000/DTI_64D_B1K(2)_0006', 65], 
-    # 'REST': ['/Volumes/20141013/CHO_KANG_IK_88091612/RESEARCH_STUDY_RESEARCH_STUDY_20150807_173318_875000/REST_FMRI_PHASE_116_(1)_0005', 4060], 
+    # ['NOR', 'baseline', '1988-09-16', 'ha',
+    # '/Volumes/promise/CCNC_MRI_3T/NOR', 'CKI', 'ChoKangIk',
+    # '88091612', 'NOR96_CKI', 'M',
+    # {'DTI': ['/Volumes/20141013/CHO_KANG_IK_88091612/RESEARCH_STUDY_RESEARCH_STUDY_20150807_173318_875000/DTI_64D_B1K(2)_0006', 65],
+    # 'REST': ['/Volumes/20141013/CHO_KANG_IK_88091612/RESEARCH_STUDY_RESEARCH_STUDY_20150807_173318_875000/REST_FMRI_PHASE_116_(1)_0005', 4060],
     # 'T1': ['/Volumes/20141013/CHO_KANG_IK_88091612/RESEARCH_STUDY_RESEARCH_STUDY_20150807_173318_875000/TFL3D_208_SLAB_0004', 208]},
-    # '96', '/Volumes/promise/CCNC_MRI_3T', 
+    # '96', '/Volumes/promise/CCNC_MRI_3T',
     # '/Volumes/20141013', u'\uc870\uac15\uc775']
     #================================================================================
 
@@ -207,13 +167,13 @@ def main(args):
     #                   subjInitial,fullname,subjNum,targetDirectory,
     #                   sex,allModalityWithLocation,maxNum,
     #                   backUpTo,backUpFrom,koreanName]
-    # ['NOR', 'baseline', '1988-09-16', 'ha', 
-    # '/Volumes/promise/CCNC_MRI_3T/NOR', 'CKI', 'ChoKangIk', 
-    # '88091612', 'NOR96_CKI', 'M', 
-    # {'DTI': ['/Volumes/20141013/CHO_KANG_IK_88091612/RESEARCH_STUDY_RESEARCH_STUDY_20150807_173318_875000/DTI_64D_B1K(2)_0006', 65], 
-    # 'REST': ['/Volumes/20141013/CHO_KANG_IK_88091612/RESEARCH_STUDY_RESEARCH_STUDY_20150807_173318_875000/REST_FMRI_PHASE_116_(1)_0005', 4060], 
+    # ['NOR', 'baseline', '1988-09-16', 'ha',
+    # '/Volumes/promise/CCNC_MRI_3T/NOR', 'CKI', 'ChoKangIk',
+    # '88091612', 'NOR96_CKI', 'M',
+    # {'DTI': ['/Volumes/20141013/CHO_KANG_IK_88091612/RESEARCH_STUDY_RESEARCH_STUDY_20150807_173318_875000/DTI_64D_B1K(2)_0006', 65],
+    # 'REST': ['/Volumes/20141013/CHO_KANG_IK_88091612/RESEARCH_STUDY_RESEARCH_STUDY_20150807_173318_875000/REST_FMRI_PHASE_116_(1)_0005', 4060],
     # 'T1': ['/Volumes/20141013/CHO_KANG_IK_88091612/RESEARCH_STUDY_RESEARCH_STUDY_20150807_173318_875000/TFL3D_208_SLAB_0004', 208]},
-    # '96', '/Volumes/promise/CCNC_MRI_3T', 
+    # '96', '/Volumes/promise/CCNC_MRI_3T',
     # '/Volumes/20141013', u'\uc870\uac15\uc775']
     #================================================================================
     if args.freesurfer:
@@ -222,7 +182,7 @@ def main(args):
 
         class fs_summary_args():
             pass
-        
+
         for subject,infoList in allInfo.iteritems():
             #copiedDir=os.path.join(infoList[4],infoList[8],infoList[1])
             copiedDir=infoList[8]
@@ -243,7 +203,7 @@ def main(args):
             fs_summary_args.verbose = True
             fs_summary_args.brain = True
 
-            
+
             freesurfer_summary.main(fs_summary_args.subject_loc,
                     fs_summary_args.backgrounds,
                     fs_summary_args.roi_list,
@@ -253,7 +213,7 @@ def main(args):
 
     print 'Completed\n'
 
-    
+
 
 
     #========================#
@@ -365,16 +325,16 @@ def noCall(logDf,backUpFrom,folderName):
 def fileNumberCounter(directory):
     fileCounter = {}
     for root, dirs, files in os.walk(directory):
-        fileCounter[os.path.basename(root)] = [root, 
-                                               len(files), 
-                                               directory, 
+        fileCounter[os.path.basename(root)] = [root,
+                                               len(files),
+                                               directory,
                                                os.path.basename(directory)]
 
     df = pd.DataFrame.from_dict(fileCounter, orient='index')
     df.columns = ['root', 'file_number', 'subjectDir', 'subjectName']
     #df['basename'] = df.index.str.split('/')[-1]
     print df['file_number']
-    
+
     response = raw_input('All check [Y/N] ? : ')
     if re.search('[yY]|[yY][eE][sS]', response):
         print 'Check !'
@@ -659,6 +619,19 @@ def executeCopy(allInfo,df):
 
     backedUpGroups=[]
     for subject, infoList in allInfo.iteritems():
+    #{'backUpFrom': False,
+    #'backUpTo': '/Volumes/promise/CCNC_MRI_3T',
+    #'dob': datetime.datetime(1989, 7, 1, 0, 0),
+    #'fullname': 'Yeshel',
+    #'group': 'ETC',
+    #'koreanName': u'\uc870\uac15\uc775',
+    #'note': 'prac',
+    #'sex': 'F',
+    #'subjectInitial': 'Y',
+    #'subjectNumber': '48068465',
+    #'targetDir': 'ETC48068465_Y',
+    #'timeline': 'baseline',
+    #'dataInfoDf' : 아래 pandas df}
         print '-----------------'
         print 'Copying',subject
         print '-----------------'
@@ -666,17 +639,27 @@ def executeCopy(allInfo,df):
         #If it's follow up (the name exists)
         #infoList[-1] : koreanName
         if infoList['timeline'] != 'baseline':
-            for modality,dataInfoDf in infoList['dataInfoDf'].iteritems():
+            for modality,dataInfoDf in infoList['dataInfoDf'].iterrows():
+                # ('T2_SPACE-FLAIR_TRA_1MM_P2_DARK-FLUID_0004',
+                #root           /Users/kangik/YESHEL_46741484/RESEARCH_STUDY_R...
+                #file_number                                                  176
+                #subjectDir                         /Users/kangik/YESHEL_46741484
+                #subjectName                                      YESHEL_46741484
+                #modality                                                     NaN
+                #depth                                                          2
+                #Name: T2_SPACE-FLAIR_TRA_1MM_P2_DARK-FLUID_0004, dtype: object)
                 #group + previousdir + follow up period(saved in the variable baseline)
-                modalityTarget=os.path.join(infoList[4],infoList[8])
-                print 'Copying {}'.format(modality)
-                os.system('mkdir -p {0}'.format(modalityTarget))
-                shutil.copytree(modalityInfo[0],os.path.join(modalityTarget,modality))
 
-
+                modalityTarget=os.path.join(infoList['backUpTo'],
+                                            infoList['group'],
+                                            infoList['targetDir'])
+                dataCopy(dataInfoDf['root'],
+                         os.path.join(modalityTarget,
+                                      dataInfoDf['modality'])
+                         )
 
         else:
-            for modality,modalityInfo in infoList[10].iteritems():
+            for modality,dataInfoDf in infoList['dataInfoDf'].iterrows():
                 # modalityInfo[0] : source
                 # modalityInfo[1] : fileNumber
                 # allInfo[subject]=[target,group,followUp,targetDirectory,allModalityWithLocation]
@@ -686,27 +669,32 @@ def executeCopy(allInfo,df):
                 # If the backing up subjects belong to the same group
                 # group : allInfo[subject][0]
                 # targetDirName : allInfo[subject][8]
-                if allInfo[subject][0] in backedUpGroups:
-                    uniq=len(backedUpGroups.count(allInfo[subject][0]))
-                    currentNum=re.search('[A-Z]{3}(\d{2})',allInfo[subject][8])
+                if subject in backedUpGroups:
+                    uniq=len(backedUpGroups.count(infoList['group']))
+                    currentNum=re.search('[A-Z]{3}(\d{2})',infoList['targetDir'])
                     newNum=int(currentNum)+uniq
-                    modalityTarget=os.path.join(
-                            allInfo[subject][4],
-                            allInfo[subject][8].replace(currentNum,newNum),'baseline')
-                    print 'Copying {}'.format(modality)
-                    os.system('mkdir -p {0}'.format(modalityTarget))
-                    shutil.copytree(modalityInfo[0],os.path.join(modalityTarget,modality))
+                    modalityTarget=os.path.join(infoList['backUpTo'],
+                                                infoList['group'],
+                                                infoList['targetDir'].replace(currentNum, newNum),
+                                                'baseline')
+                    dataCopy(dataInfoDf['root'],
+                             os.path.join(modalityTarget,
+                                          dataInfoDf['modality'])
+                             )
                 else:
+                    modalityTarget=os.path.join(infoList['backUpTo'],
+                                                infoList['group'],
+                                                infoList['targetDir'],
+                                                'baseline')
+                    dataCopy(dataInfoDf['root'],
+                             os.path.join(modalityTarget,
+                                          dataInfoDf['modality'])
+                             )
 
-                    modalityTarget=os.path.join(allInfo[subject][4],allInfo[subject][8],'baseline')
-                    print modalityTarget
-                    print 'Copying {}'.format(modality)
-                    os.system('mkdir -p {0}'.format(modalityTarget))
-                    shutil.copytree(modalityInfo[0],os.path.join(modalityTarget,modality))
 
+        # move it to later stage
         subjectDf = newDf[subject]
         subjectDf.to_csv(os.path.join(modalityTarget,'log.txt'),sep='\t',encoding='utf-8')
-
 
 
 # In[308]:
@@ -891,7 +879,7 @@ def modality_depth_add(df):
     dataframe.subjectName = 'CHO_KANG_IK_88091612'
     '''
 
-    # index 
+    # index
     #'T2_SPACE_FLAIR_p2_iso':'T2_FLAIR',
     #'T2_SPACE_1mm_iso':'T2_1mm'
     modalityNames =  {
@@ -927,7 +915,7 @@ def modality_depth_add(df):
     print df_reset.ix[(df_reset.modality.isnull())]['index']
     if raw_input('Check [Y/N] ? :') == 'Y':
         return df_reset.set_index('index')
-    
+
 
 def get_first_dicom(ext,location):
     for root,dirs,files in os.walk(location):
@@ -959,7 +947,14 @@ def make_empty_db_df():
        }
          },orient='index'
         )
+    return df
 
+
+def dataCopy(source, target):
+    print 'Copying {0}'.format(source)
+    os.system('mkdir -p {0}'.format(os.path.dirname(target))
+    shutil.copytree(source,
+                    target))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
