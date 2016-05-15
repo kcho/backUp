@@ -38,9 +38,12 @@ def main(args):
 
     ######################################################################
     # Variable settings                                                  #
-    # - backUpTo : location of the CCNC_MRI_3T                           #
-    # - DatabaseAddress : location of the CCNC_MRI_3T database excel     #
-    # - backUpFrom : location of the new data dirname                    #
+    ######################################################################
+    # - backUpTo : location of the CCNC_MRI_3T, str                      #
+    # - DatabaseAddress : location of the CCNC_MRI_3T db excel, str      #
+    # - backUpFrom : location of the new data dirname, str               #
+    # - logFileInUSB : location of back up check excel file, str         #
+    # - db_df : pandas dataframe of the DataBaseAddress, pd.DataFrame    #
     ######################################################################
     backUpTo = args.backupDir
     DataBaseAddress = args.database
@@ -52,24 +55,57 @@ def main(args):
         backUpFrom = args.hddLocation
         logFileInUSB = os.path.join(backUpFrom,"log.xlsx")
 
-    logDf = copiedDirectoryCheck(logFileInUSB)
-
-    newDirectoryList, logDf = newDirectoryGrep(args.inputDirs, backUpFrom, logDf)
-    logDf.to_excel(logFileInUSB,'Sheet1')
-
-    if newDirectoryList==[]:
-        sys.exit('Everything have been backed up !')
-
     if os.path.isfile(DataBaseAddress):
         excelFile = pd.ExcelFile(DataBaseAddress)
         db_df = excelFile.parse(0)
     else:
         db_df = make_empty_db_df()
+    
+    ######################################################################
+    # Read logFileInUSB into pandas dataframe                            #
+    ######################################################################
+    # - logDf.columns : ['directoryName','backedUpBy','backedUpAt']      #
+    ######################################################################
+    logDf = copiedDirectoryCheck(logFileInUSB)
 
+    ######################################################################
+    # Feedback from the user whether to back up the dirs in the source   #
+    ######################################################################
+    # - newDirectoryList : list of dirs to back up, list of str          #
+    # - logDf : updated pandas dataframe of the logDf                    #
+    ######################################################################
+    newDirectoryList, logDf = newDirectoryGrep(args.inputDirs, backUpFrom, logDf)
+    logDf.to_excel(logFileInUSB,'Sheet1')
+
+    # turn the script off if there is no dir to back up
+    if newDirectoryList==[]:
+        sys.exit('Everything have been backed up !')
+
+
+    ######################################################################
+    # File and directory information extraction                          #
+    # - Print number of each dirs in each newDirectoryList               #
+    # - And get user confirm                                             #
+    # - Retrun directories with matching modality                        #
+    ######################################################################
+    # - allDict[newDirectory] : pandas dataframe                         #
+    # - columns = ['root', 'file_number', 'subjectDir',                  #
+    #              'subjectName', 'modality', 'depth']                   #
+    # - 'subjectName' : os.path.basename('root')                         #
+    # - newDirectoryList : list of dirs to back up, list of str          #
+    # - logDf : updated pandas dataframe of the logDf                    #
+    ######################################################################
     allDict = {}
     for newDirectory in newDirectoryList:
-        allDict[newDirectory] = fileNumberCounter(newDirectory)
+        data_df = fileNumberCounter(newDirectory)
+        allDict[newDirectory]  = modality_depth_add(data_df)
 
+    ######################################################################
+    # Subject information inputs                                         #
+    ######################################################################
+    # - newDirectoryList : list of dirs to back up, list of str          #
+    # - logDf : updated pandas dataframe of the logDf                    #
+    ######################################################################
     allInfo = {}
     for newDirectory, data_df in allDict.iteritems():
         subjectInitial, fullname, patientNumber = getName(newDirectory)
@@ -78,9 +114,13 @@ def main(args):
         group, timeline = getGroup()
         note = raw_input('\tAny note ? :')
         koreanName = getKoreanName()
-        targetDirectory, maxNum = getTargetLocation(newDirectory, group, subjectInitial, timeline, backUpTo, db_df)
+        targetDirectory, maxNum = getTargetLocation(newDirectory, 
+                                                    group, 
+                                                    subjectInitial, 
+                                                    timeline, 
+                                                    backUpTo, 
+                                                    db_df)
 
-        new_data_df = modality_depth_add(data_df)
 
         allInfo[newDirectory] = {
                 'koreanName':koreanName,
@@ -89,16 +129,18 @@ def main(args):
                 'dob':dicomInfo['dob'],
                 'note':note,
                 'targetDir':targetDirectory,
+                'targetDirLoc':os.path.join(backUpTo,
+                                            group,
+                                            targetDirectory),
                 'sex':dicomInfo['sex'],
                 'subjectInitial':subjectInitial,
                 'fullname':fullname,
                 'subjectNumber':maxNum,
                 'backUpTo':backUpTo,
                 'backUpFrom':backUpFrom,
-                'dataInfoDf':new_data_df
+                'dataInfoDf':data_df
                 }
 
-    return allInfo, db_df
 
     #allInfo,df,newDfList=verifyNumbersAndLog(foundDict,backUpTo,backUpFrom,DataBaseAddress)
     #================================================================================
@@ -109,7 +151,8 @@ def main(args):
     #================================================================================
     if args.executeCopy:
         executeCopy(allInfo,db_df)
-        df.to_excel(DataBaseAddress, sheet_name='rearrangeWithId')
+
+        df_df.to_excel(DataBaseAddress, sheet_name='rearrangeWithId')
 
         for dirName, value in allInfo.iteritems():
             logDf = noCall(logDf, backUpFrom, dirName)
@@ -150,7 +193,7 @@ def main(args):
 
     if args.motion:
         print 'Now, running motion_extraction'
-        for subject,infoList in allInfo.iteritems():
+        for source,infoList in allInfo.iteritems():
             #copiedDir=os.path.join(infoList[4],infoList[8],infoList[1])
             copiedDir=infoList[8]
             motion_extraction.to_nifti(copiedDir,False)
@@ -183,7 +226,7 @@ def main(args):
         class fs_summary_args():
             pass
 
-        for subject,infoList in allInfo.iteritems():
+        for source,infoList in allInfo.iteritems():
             #copiedDir=os.path.join(infoList[4],infoList[8],infoList[1])
             copiedDir=infoList[8]
             print copiedDir
@@ -268,7 +311,7 @@ def copiedDirectoryCheck(logFileInUSB):
 
 # In[325]:
 
-def newDirectoryGrep(inputDirs, backUpFrom,logDf):
+def newDirectoryGrep(inputDirs, backUpFrom, logDf):
     '''
     show the list of folders under the backUpFrom
     if it is confirmed by the user
@@ -281,7 +324,6 @@ def newDirectoryGrep(inputDirs, backUpFrom,logDf):
             toBackUp.append(subjFolder)
 
     else:
-
         #grebbing directories in the target
         allFiles = os.listdir(backUpFrom)
         directories = [item for item in allFiles if os.path.isdir(os.path.join(backUpFrom,item))
@@ -611,12 +653,6 @@ def dicomNumberCheckInDictionary(allModalityWithLocation):
 
 
 def executeCopy(allInfo,df):
-    #newDf --> {subject:allInfoDf}
-    maxNum=0
-    #allInfo[subject]=[target,group,followUp,targetDirectory,allModalityWithLocation]
-    #allModalityWithLocation
-    #{'T1':['source','file number'],'DTI':['source','file number']}
-
     backedUpGroups=[]
     for subject, infoList in allInfo.iteritems():
     #{'backUpFrom': False,
@@ -635,7 +671,6 @@ def executeCopy(allInfo,df):
         print '-----------------'
         print 'Copying',subject
         print '-----------------'
-
         #If it's follow up (the name exists)
         #infoList[-1] : koreanName
         if infoList['timeline'] != 'baseline':
@@ -650,9 +685,8 @@ def executeCopy(allInfo,df):
                 #Name: T2_SPACE-FLAIR_TRA_1MM_P2_DARK-FLUID_0004, dtype: object)
                 #group + previousdir + follow up period(saved in the variable baseline)
 
-                modalityTarget=os.path.join(infoList['backUpTo'],
-                                            infoList['group'],
-                                            infoList['targetDir'])
+                modalityTarget=os.path.join(infoList['targetDirLoc'],
+                                            infoList['timeline'])
                 dataCopy(dataInfoDf['root'],
                          os.path.join(modalityTarget,
                                       dataInfoDf['modality'])
@@ -682,9 +716,7 @@ def executeCopy(allInfo,df):
                                           dataInfoDf['modality'])
                              )
                 else:
-                    modalityTarget=os.path.join(infoList['backUpTo'],
-                                                infoList['group'],
-                                                infoList['targetDir'],
+                    modalityTarget=os.path.join(infoList['targetDirLoc'],
                                                 'baseline')
                     dataCopy(dataInfoDf['root'],
                              os.path.join(modalityTarget,
@@ -699,82 +731,82 @@ def executeCopy(allInfo,df):
 
 # In[308]:
 
-def verifyNumbersAndLog(foundDict,backUpTo,backUpFrom, DataBaseAddress):
+#def verifyNumbersAndLog(foundDict,backUpTo,backUpFrom, DataBaseAddress):
 
-    #{subject:{'T1':['source','file number'],'DTI':['source','file number'],...},subject2:{...}}
-    allInfo={}
-
-
-
-    if os.path.isfile(DataBaseAddress):
-        excelFile = pd.ExcelFile(DataBaseAddress)
-        df = excelFile.parse(excelFile.sheet_names[0])
-    else:
-        df = pd.DataFrame.from_dict({None:{'subjectName':None,
-                                           'subjectInitial':None,
-                                           'group':None,
-                                           'sex':None,
-                                           'DOB':None,
-                                           'scanDate':None,
-                                           'age':None,
-                                           'timeline':None,
-                                           'studyname':None,
-                                           'folderName':None,
-                                           'T1Number':None,
-                                           'DTINumber':None,
-                                           'DKINumber':None,
-                                           'RESTNumber':None,
-                                           'note':None,
-                                           'patientNumber':None,
-                                           'folderName':None,
-                                           'backUpBy':None
-                                           }
-                                     },orient='index'
-                                    )
+    ##{subject:{'T1':['source','file number'],'DTI':['source','file number'],...},subject2:{...}}
+    #allInfo={}
 
 
-    newDfList = {}
-    #for each subjects
-    for subject,allModalityWithLocation in foundDict.iteritems():
-        #allModalityWithLocation
-        #{'T1':['source','file number'],'DTI':['source','file number']}
-        print '----------------------------------------'
-        print subject
-        print '----------------------------------------'
 
-        modalityToRecheck=[]
-        modalityConfirmed=[]
-
-        checkFileNumbers(allModalityWithLocation)
-
-        #Group, followUp(baseline,followup,CNT,PRO)
-        koreanName = getKoreanName()
-        group,timeline=getGroup()
-        birthday,note=getDOB_NOTE()
-        sex=getSex()
-        studyname = studyName()
-
-        target,subjInitial,fullname,subjNum,targetDirectory,maxNum=getTargetLocation(subject,group,timeline,backUpTo,df)
-        os.mkdir(os.path.join(target,targetDirectory))
-
-#        print '\n\n\n-----------------'
-#        print group,timeline,birthday,note,target,subjInitial,fullname,subjNum,targetDirectory,sex,allModalityWithLocation,maxNum,backUpTo,backUpFrom
-#        print '-----------------\n\n\n'
-
-        allInfoDf = log(subject,koreanName,group,timeline,birthday,note,target,subjInitial,fullname,subjNum,studyname,targetDirectory,sex,allModalityWithLocation,maxNum,backUpTo,backUpFrom)
-
-        newDfList[subject]=allInfoDf
+    #if os.path.isfile(DataBaseAddress):
+        #excelFile = pd.ExcelFile(DataBaseAddress)
+        #df = excelFile.parse(excelFile.sheet_names[0])
+    #else:
+        #df = pd.DataFrame.from_dict({None:{'subjectName':None,
+                                           #'subjectInitial':None,
+                                           #'group':None,
+                                           #'sex':None,
+                                           #'DOB':None,
+                                           #'scanDate':None,
+                                           #'age':None,
+                                           #'timeline':None,
+                                           #'studyname':None,
+                                           #'folderName':None,
+                                           #'T1Number':None,
+                                           #'DTINumber':None,
+                                           #'DKINumber':None,
+                                           #'RESTNumber':None,
+                                           #'note':None,
+                                           #'patientNumber':None,
+                                           #'folderName':None,
+                                           #'backUpBy':None
+                                           #}
+                                     #},orient='index'
+                                    #)
 
 
-        df = pd.concat([df,allInfoDf])
-        df = df[['koreanName','subjectName','subjectInitial','group','sex','age','DOB','scanDate','timeline','studyname','patientNumber',
-                 'T1Number','DTINumber','DKINumber','RESTNumber','REST2Number','folderName','backUpBy','note']]
-        df = df.reset_index().drop('index',axis=1)
+    #newDfList = {}
+    ##for each subjects
+    #for subject,allModalityWithLocation in foundDict.iteritems():
+        ##allModalityWithLocation
+        ##{'T1':['source','file number'],'DTI':['source','file number']}
+        #print '----------------------------------------'
+        #print subject
+        #print '----------------------------------------'
+
+        #modalityToRecheck=[]
+        #modalityConfirmed=[]
+
+        #checkFileNumbers(allModalityWithLocation)
+
+        ##Group, followUp(baseline,followup,CNT,PRO)
+        #koreanName = getKoreanName()
+        #group,timeline=getGroup()
+        #birthday,note=getDOB_NOTE()
+        #sex=getSex()
+        #studyname = studyName()
+
+        #target,subjInitial,fullname,subjNum,targetDirectory,maxNum=getTargetLocation(subject,group,timeline,backUpTo,df)
+        #os.mkdir(os.path.join(target,targetDirectory))
+
+##        print '\n\n\n-----------------'
+##        print group,timeline,birthday,note,target,subjInitial,fullname,subjNum,targetDirectory,sex,allModalityWithLocation,maxNum,backUpTo,backUpFrom
+##        print '-----------------\n\n\n'
+
+        #allInfoDf = log(subject,koreanName,group,timeline,birthday,note,target,subjInitial,fullname,subjNum,studyname,targetDirectory,sex,allModalityWithLocation,maxNum,backUpTo,backUpFrom)
+
+        #newDfList[subject]=allInfoDf
 
 
-        allInfo[subject]=[group,timeline,birthday,note,target,subjInitial,fullname,subjNum,targetDirectory,sex,allModalityWithLocation,maxNum,backUpTo,backUpFrom,koreanName]
+        #df = pd.concat([df,allInfoDf])
+        #df = df[['koreanName','subjectName','subjectInitial','group','sex','age','DOB','scanDate','timeline','studyname','patientNumber',
+                 #'T1Number','DTINumber','DKINumber','RESTNumber','REST2Number','folderName','backUpBy','note']]
+        #df = df.reset_index().drop('index',axis=1)
 
-    return allInfo,df,newDfList
+
+        #allInfo[subject]=[group,timeline,birthday,note,target,subjInitial,fullname,subjNum,targetDirectory,sex,allModalityWithLocation,maxNum,backUpTo,backUpFrom,koreanName]
+
+    #return allInfo,df,newDfList
 
 
 # In[309]:
