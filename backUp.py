@@ -19,10 +19,10 @@ import textwrap
 import pandas as pd
 import updateSpreadSheet
 import motionExtraction
-import easyFreesurfer
-import freesurfer_Summary # bienseo: not work
+#import easyFreesurfer #bienseo: not work -> using freesurfer.py
+#import freesurfer_Summary # bienseo: not work
 import subject as subj
-import dtifit as bien #bienseo dti preprocessing
+import dtifit as bien #bienseo dti fa map
 
 # scp modules for network dual back up
 import getpass
@@ -88,13 +88,13 @@ def backUp(inputDirs, backUpFrom, USBlogFile, backUpTo,
         for subjectClass in subjectClassList:
             copiedDir = os.path.dirname(subjectClass.targetDir)
             server_connect(server, copiedDir)
-
-    if freesurfer:
-        for subjectClass in subjectClassList:
-            easyFreesurfer.main(subjectClass.targetDir, 
-                                os.path.join(subjectClass.targetDir,'FREESURFER'))
-            freesurfer_Summary.main(copiedDir, None,                #bienseo: only use freesurfer.
-                                    "ctx_lh_G_cuneus", True, True, True, True)
+   # freesurfer.py import error #bienseo
+   # if freesurfer:
+   #     for subjectClass in subjectClassList:
+   #         easyFreesurfer.main(subjectClass.targetDir, 
+   #                             os.path.join(subjectClass.targetDir,'FREESURFER'))
+   #         freesurfer_Summary.main(copiedDir, None,                #bienseo: only use freesurfer.
+   #                                 "ctx_lh_G_cuneus", True, True, True, True)
     print 'Completed\n'
  
 
@@ -365,7 +365,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-hd', '--hddLocation',
         help='Location of external drive that contains new data. Eg) /Volumes/160412',
-        default='/external_HDD', #bienseo: directory changed in D1 /external_HDD
+        default='/media/MRI_cohort', #bienseo: directory changed in D1 #if: directory name changed -> must check this #dahye_bae changed the path Apr15.2017
         )
 
     parser.add_argument(
@@ -376,18 +376,18 @@ if __name__ == '__main__':
 
     parser.add_argument(
         '-b', '--backupDir',
-        help='Location of data storage root. Default : "/Volumes/promise/CCNC_MRI_3T"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T", #bienseo: directory changed in D1
+        help='Location of data storage root. Default : "/volumes/CCNC_MRI/CCNC_MRI_3T"',
+        default="/volume/CCNC_MRI/CCNC_MRI_3T", #bienseo: directory changed in D1 #dahye_bae confirm
         )
     parser.add_argument(
         '-d', '--database',
-        help='Location of database file. Default : "/Volumes/promise/CCNC_MRI_3T/database/database.xls"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T/database/database.xls", #bienseo: directory changed in D1
+        help='Location of database file. Default : "/volumes/CCNC_MRI/CCNC_MRI_3T/database/database.xls"',
+        default="/volume/CCNC_MRI/CCNC_MRI_3T/database/database.xls", #bienseo: directory changed in D1 #dahye_bae confirm
         )
     parser.add_argument(
         '-s', '--spreadsheet',
         help='Location of output excel file. Default : "/ccnc/MRIspreadsheet/MRI.xls"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T/MRIspreadsheet/MRI.xls", #bienseo: directory changed in D1
+        default="/volume/CCNC_MRI/CCNC_MRI_3T/MRIspreadsheet/MRI.xls", #bienseo: directory changed in D1 #dahye_bae confirm
         )
 
     parser.add_argument(
