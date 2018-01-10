@@ -62,16 +62,6 @@ def backUp(inputDirs, backUpTo,
 
         updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
 
-    if motion:
-        print 'Now, running motion_extraction'
-        for subjectClass in subjectClassList:
-            motionExtraction.main(subjectClass.targetDir, True, True, False)
-            bien.dtiFit(os.path.join(subjectClass.targetDir,'DTI'))
-    if nasBackup:
-        server = '147.47.228.192'
-        for subjectClass in subjectClassList:
-            copiedDir = os.path.dirname(subjectClass.targetDir)
-            server_connect(server, copiedDir)
    # freesurfer.py import error #bienseo
    # if freesurfer:
    #     for subjectClass in subjectClassList:
@@ -402,9 +392,19 @@ if __name__ == '__main__':
 
     # Run motion check
     #args.motion
+    #if motion:
+        #print 'Now, running motion_extraction'
+        #for subjectClass in subjectClassList:
+            #motionExtraction.main(subjectClass.targetDir, True, True, False)
+            #bien.dtiFit(os.path.join(subjectClass.targetDir,'DTI'))
 
     # Run freesurfer
     #args.freesurfer
 
     # Run nas backup
     #args.nasBackup
+    #if nasBackup:
+        #server = '147.47.228.192'
+        #for subjectClass in subjectClassList:
+            #copiedDir = os.path.dirname(subjectClass.targetDir)
+            #server_connect(server, copiedDir)
