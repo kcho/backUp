@@ -35,21 +35,6 @@ def backUp(inputDirs, backUpFrom, USBlogFile, backUpTo,
            DataBaseAddress, spreadsheet,
            freesurfer, motion, copyExecute, nasBackup):
 
-    # External HDD log
-    if USBlogFile:
-        logFileInUSB = USBlogFile
-    elif inputDirs:
-        logFileInUSB = os.path.join(os.getcwd(),"log.xlsx")
-    else:
-        logFileInUSB = os.path.join(backUpFrom,"log.xlsx")
-
-    logDf = copiedDirectoryCheck(backUpFrom, logFileInUSB)
-    newDirectoryList,logDf = newDirectoryGrep(inputDirs, backUpFrom, logDf)
-    logDf.to_excel(logFileInUSB,'Sheet1')
-
-    if newDirectoryList == []:
-        sys.exit('Everything have been backed up !')
-
     subjectClassList = []
     for newDirectory in newDirectoryList:
         subjClass = subj.subject(newDirectory, backUpTo)
@@ -409,12 +394,11 @@ if __name__ == '__main__':
                                      log_file_in_hdd)
         inputDirs, log_df_updated = findNewDirs(backUpFrom,
                                                 logDf)
-
         log_df_updated.to_excel(log_file_in_hdd,'Sheet1')
         if newDirectoryList == []:
             sys.exit('Everything have been backed up !')
 
-        backUp(args.hddDir, 
+        backUp(inputDirs, 
                args.backupDir, 
                args.database, args.spreadsheet)
 
