@@ -62,13 +62,6 @@ def backUp(inputDirs, backUpTo,
 
         updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
 
-   # freesurfer.py import error #bienseo
-   # if freesurfer:
-   #     for subjectClass in subjectClassList:
-   #         easyFreesurfer.main(subjectClass.targetDir, 
-   #                             os.path.join(subjectClass.targetDir,'FREESURFER'))
-   #         freesurfer_Summary.main(copiedDir, None,                #bienseo: only use freesurfer.
-   #                                 "ctx_lh_G_cuneus", True, True, True, True)
     print 'Completed\n'
  
 
@@ -400,6 +393,13 @@ if __name__ == '__main__':
 
     # Run freesurfer
     #args.freesurfer
+   # freesurfer.py import error #bienseo
+   # if freesurfer:
+   #     for subjectClass in subjectClassList:
+   #         easyFreesurfer.main(subjectClass.targetDir, 
+   #                             os.path.join(subjectClass.targetDir,'FREESURFER'))
+   #         freesurfer_Summary.main(copiedDir, None,                #bienseo: only use freesurfer.
+   #                                 "ctx_lh_G_cuneus", True, True, True, True)
 
     # Run nas backup
     #args.nasBackup
