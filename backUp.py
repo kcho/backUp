@@ -58,11 +58,18 @@ def backUp(inputDirs, backUpTo,
                         u'timeline',
                         u'studyname',
                         u'patientNumber',
-                        u'T1Number',
-                        u'DTINumber',
-                        u'DKINumber',
-                        u'RESTNumber',
-                        u'REST2Number',
+                        u'T1',
+                        u'T2',
+                        u'REST_LR',
+                        u'REST_LR_SBRef',
+                        u'REST_BLIP_LR',
+                        u'REST_BLIP_RL',
+                        u'DTI_LR_1000',
+                        u'DTI_LR_2000',
+                        u'DTI_LR_3000',
+                        u'DTI_BLIP_LR',
+                        u'DTI_BLIP_RL',
+                        u'dx',
                         u'folderName',
                         u'backUpBy',
                         u'note']]
@@ -337,23 +344,22 @@ if __name__ == '__main__':
     parser.add_argument(
         '-h', '--hddDir',
         help='Location of external drive to search for new data. Eg) /Volumes/20160420',
-        default='/media/MRI_cohort',)  #change this later TW
-    usbLogFile = join(args.hddDir, 'log.xls') #change this later TW
+        default='/media/MRI_cohort',) 
 
     parser.add_argument(
         '-b', '--backupDir',
         help='Location of data storage root. Default : "/volumes/CCNC_MRI/CCNC_MRI_3T"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T",) #change this later TW
+        default='/volume/CCNC_MRI/BCS_MRI',)
 
     parser.add_argument(
         '-d', '--database',
         help='Location of database file. Default : "/volumes/CCNC_MRI/CCNC_MRI_3T/database/database.xls"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T/database/database.xls",) #change this later  TW
+        default='/volume/CCNC_MRI/BCS_MRI/database/database_bcs.xlsx',) 
 
     parser.add_argument(
         '-s', '--spreadsheet',
         help='Location of output excel file. Default : "/ccnc/MRIspreadsheet/MRI.xls"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T/MRIspreadsheet/MRI.xls",) #change this later TW
+        default="/volume/CCNC_MRI/BCS_MRI/MRI.xls",) #change this later TW
 
     parser.add_argument(
         '-f', '--freesurfer',
