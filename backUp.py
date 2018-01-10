@@ -12,6 +12,7 @@ import time
 from datetime import date
 import sys
 import os
+from os.path import join, basename, dirname
 import shutil
 from progressbar import AnimatedMarker, ProgressBar, Percentage, Bar
 import argparse
@@ -353,63 +354,52 @@ if __name__ == '__main__':
                          It automatically adds logs to ccnc database.
             ========================================
             eg) {codeName}
-            '''.format(codeName=os.path.basename(__file__))))
+            '''.format(codeName=basename(__file__))))
 
     parser.add_argument(
         '-i', '--inputDirs',
-        help='Location of data to back up. Eg) /Volumes/20160420/CHO_KANG_IK_12344321',
+        help='One or more locations of data to back up. Eg) /Volumes/20160420/CHO_KANG_IK_12344321',
         nargs='*',
-        default=False, #bienseo: directory changed in D1
-        )
+        default=False, )
 
     parser.add_argument(
-        '-hd', '--hddLocation',
-        help='Location of external drive that contains new data. Eg) /Volumes/160412',
-        default='/media/MRI_cohort', #bienseo: directory changed in D1 #if: directory name changed -> must check this #dahye_bae changed the path Apr15.2017
-        )
-
-    parser.add_argument(
-        '-l', '--USBlogFile',
-        help='Location of excel file that contains back up log. Eg) /Volumes/160412/log.xlsx',
-        default=False,
-        )
+        '-h', '--hddDir',
+        help='Location of external drive to search for new data. Eg) /Volumes/20160420',
+        default='/media/MRI_cohort',)  #change this later TW
+    usbLogFile = join(args.hddDir, 'log.xls') #change this later TW
 
     parser.add_argument(
         '-b', '--backupDir',
         help='Location of data storage root. Default : "/volumes/CCNC_MRI/CCNC_MRI_3T"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T", #bienseo: directory changed in D1 #dahye_bae confirm
-        )
+        default="/volume/CCNC_MRI/CCNC_MRI_3T",) #change this later TW
+
     parser.add_argument(
         '-d', '--database',
         help='Location of database file. Default : "/volumes/CCNC_MRI/CCNC_MRI_3T/database/database.xls"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T/database/database.xls", #bienseo: directory changed in D1 #dahye_bae confirm
-        )
+        default="/volume/CCNC_MRI/CCNC_MRI_3T/database/database.xls",) #change this later  TW
+
     parser.add_argument(
         '-s', '--spreadsheet',
         help='Location of output excel file. Default : "/ccnc/MRIspreadsheet/MRI.xls"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T/MRIspreadsheet/MRI.xls", #bienseo: directory changed in D1 #dahye_bae confirm
-        )
+        default="/volume/CCNC_MRI/CCNC_MRI_3T/MRIspreadsheet/MRI.xls",) #change this later TW
 
     parser.add_argument(
         '-f', '--freesurfer',
         help='Run freesurfer',
         action='store_true',
-        default=False,
-        )
+        default=False,)
 
     parser.add_argument(
         '-m', '--motion',
         help='Run motion extraction',
         action='store_true',
-        default=False,
-        )
+        default=False,)
 
     parser.add_argument(
         '-x', '--executeCopy',
         help='Execute copy and update database',
         action='store_true',
-        default=False,
-        )
+        default=False,)
 
     parser.add_argument(
         '-n', '--nasBackup',
@@ -419,6 +409,7 @@ if __name__ == '__main__':
         )
     args = parser.parse_args()
 
-    backUp(args.inputDirs, args.hddLocation, args.USBlogFile, args.backupDir,
+    # Run backUp
+    backUp(args.inputDirs, args.hddDir, usbLogFile, args.backupDir,
            args.database, args.spreadsheet, args.freesurfer, args.motion,
            args.executeCopy, args.nasBackup)
