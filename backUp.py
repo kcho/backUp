@@ -47,13 +47,26 @@ def backUp(inputDirs, backUpTo,
         dbDf = processDB(DataBaseAddress)
 
         newDf = pd.concat([dbDf, subjDf]).reset_index()
-        newDf = newDf[[ u'koreanName',  u'subjectName',   u'subjectInitial',
-                        u'group',       u'sex',           u'age',
-                        u'DOB',         u'scanDate',      u'timeline',
-                        u'studyname',   u'patientNumber', u'T1Number',
-                        u'DTINumber',   u'DKINumber',     u'RESTNumber',
-                        u'REST2Number', u'folderName',    u'backUpBy',
+        newDf = newDf[[ u'koreanName',  
+                        u'subjectName',
+                        u'subjectInitial',
+                        u'group',
+                        u'sex',
+                        u'age',
+                        u'DOB',
+                        u'scanDate',
+                        u'timeline',
+                        u'studyname',
+                        u'patientNumber',
+                        u'T1Number',
+                        u'DTINumber',
+                        u'DKINumber',
+                        u'RESTNumber',
+                        u'REST2Number',
+                        u'folderName',
+                        u'backUpBy',
                         u'note']]
+        #please confirm here
 
         newDf['koreanName'] = newDf['koreanName'].str.decode('utf-8')
         newDf['note'] = newDf['note'].str.decode('utf-8')
@@ -61,9 +74,7 @@ def backUp(inputDirs, backUpTo,
         # os.chmod(DataBaseAddress, 0o2770)
 
         updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
-
     print 'Completed\n'
- 
 
 def noCall(logDf, backUpFrom, folderName):
     logDf = pd.concat([logDf,pd.DataFrame.from_dict({'directoryName': folderName,
