@@ -12,7 +12,7 @@ import time
 from datetime import date
 import sys
 import os
-from os.path import join, basename, dirname
+from os.path import join, basename, dirname, isdir
 import shutil
 from progressbar import AnimatedMarker, ProgressBar, Percentage, Bar
 import argparse
@@ -128,7 +128,7 @@ def findNewDirs(backUpFrom, logDf):
 
     # grebbing directories in the target
     allFiles = os.listdir(backUpFrom)
-    directories = [item for item in allFiles if os.path.isdir(os.path.join(backUpFrom, item))
+    directories = [item for item in allFiles if isdir(join(backUpFrom, item))
                    and not item.startswith('$')
                    and not item.startswith('.')]
 
