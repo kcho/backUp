@@ -119,48 +119,43 @@ def copiedDirectoryCheck(backUpFrom, logFileInUSB):
     return df
 
 
-def newDirectoryGrep(inputDirs, backUpFrom, logDf):
+def findNewDirs(backUpFrom, logDf):
     '''
-    show the list of folders under the backUpFrom
-    if it is confirmed by the user
-    excute backup
+    List the new directories under the back up source dir,
+    and get confirm from the user.
     '''
     toBackUp = []
 
-    if inputDirs:
-        for subjFolder in inputDirs:
+    # grebbing directories in the target
+    allFiles = os.listdir(backUpFrom)
+    directories = [item for item in allFiles if os.path.isdir(os.path.join(backUpFrom, item))
+                   and not item.startswith('$')
+                   and not item.startswith('.')]
+
+    newDirectories = [item for item in directories if not item in [str(x).encode("ascii") for x in logDf.directoryName]]
+
+    for folderName in newDirectories:
+        subjFolder = os.path.join(backUpFrom, folderName)
+        stat = os.stat(subjFolder)
+        created = os.stat(subjFolder).st_ctime
+        asciiTime = time.asctime(time.gmtime(created))
+        print '''
+        ------------------------------------
+        ------{0}
+        created on ( {1} )
+        ------------------------------------
+        '''.format(folderName,asciiTime)
+        response = raw_input('\nIs this the name of the subject you want to back up?'
+                             '[Yes/No/Quit/noCall] : ')
+
+        if re.search('[yY]|[yY][Ee][Ss]',response):
             toBackUp.append(subjFolder)
-    else:
-        # grebbing directories in the target
-        allFiles = os.listdir(backUpFrom)
-        directories = [item for item in allFiles if os.path.isdir(os.path.join(backUpFrom, item))
-                       and not item.startswith('$')
-                       and not item.startswith('.')]
-
-        newDirectories = [item for item in directories if not item in [str(x).encode("ascii") for x in logDf.directoryName]]
-
-        for folderName in newDirectories:
-            subjFolder = os.path.join(backUpFrom, folderName)
-            stat = os.stat(subjFolder)
-            created = os.stat(subjFolder).st_ctime
-            asciiTime = time.asctime(time.gmtime(created))
-            print '''
-            ------------------------------------
-            ------{0}
-            created on ( {1} )
-            ------------------------------------
-            '''.format(folderName,asciiTime)
-            response = raw_input('\nIs this the name of the subject you want to back up?'
-                                 '[Yes/No/Quit/noCall] : ')
-
-            if re.search('[yY]|[yY][Ee][Ss]',response):
-                toBackUp.append(subjFolder)
-            elif re.search('[Dd][Oo][Nn][Ee]|stop|[Qq][Uu][Ii][Tt]|exit',response):
-                break
-            elif re.search('[Nn][Oo][Cc][Aa][Ll][Ll]',response):
-                logDf = noCall(logDf, backUpFrom, folderName)
-            else:
-                continue
+        elif re.search('[Dd][Oo][Nn][Ee]|stop|[Qq][Uu][Ii][Tt]|exit',response):
+            break
+        elif re.search('[Nn][Oo][Cc][Aa][Ll][Ll]',response):
+            logDf = noCall(logDf, backUpFrom, folderName)
+        else:
+            continue
 
     print toBackUp
     return toBackUp, logDf
@@ -396,12 +391,6 @@ if __name__ == '__main__':
         default=False,)
 
     parser.add_argument(
-        '-x', '--executeCopy',
-        help='Execute copy and update database',
-        action='store_true',
-        default=False,)
-
-    parser.add_argument(
         '-n', '--nasBackup',
         help='Makes dual back up to NAS',
         action='store_true',
@@ -410,6 +399,30 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Run backUp
-    backUp(args.inputDirs, args.hddDir, usbLogFile, args.backupDir,
-           args.database, args.spreadsheet, args.freesurfer, args.motion,
-           args.executeCopy, args.nasBackup)
+    if args.inputDirs: # if input directories are specified
+        backUp(args.inputDirs, 
+               args.backupDir, 
+               args.database, args.spreadsheet)
+    else: # search external HDD
+        log_file_in_hdd = join(args.backUpFrom,"log.xlsx")
+        log_df = copiedDirectoryCheck(args.backUpFrom,
+                                     log_file_in_hdd)
+        inputDirs, log_df_updated = findNewDirs(backUpFrom,
+                                                logDf)
+
+        log_df_updated.to_excel(log_file_in_hdd,'Sheet1')
+        if newDirectoryList == []:
+            sys.exit('Everything have been backed up !')
+
+        backUp(args.hddDir, 
+               args.backupDir, 
+               args.database, args.spreadsheet)
+
+    # Run motion check
+    #args.motion
+
+    # Run freesurfer
+    #args.freesurfer
+
+    # Run nas backup
+    #args.nasBackup
