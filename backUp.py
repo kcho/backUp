@@ -31,38 +31,36 @@ from paramiko import SSHClient
 from scp import SCPClient
 
 
-def backUp(inputDirs, backUpFrom, USBlogFile, backUpTo,
-           DataBaseAddress, spreadsheet,
-           freesurfer, motion, copyExecute, nasBackup):
+def backUp(inputDirs, backUpTo,
+           DataBaseAddress, spreadsheet):
 
     subjectClassList = []
-    for newDirectory in newDirectoryList:
+    for newDirectory in inputDirs:
         subjClass = subj.subject(newDirectory, backUpTo)
         checkFileNumbers(subjClass)
         subjectClassList.append(subjClass)
 
-        if copyExecute:
-            executeCopy(subjClass)
+        executeCopy(subjClass)
 
-            subjDf = saveLog(subjClass)
+        subjDf = saveLog(subjClass)
 
-            dbDf = processDB(DataBaseAddress)
+        dbDf = processDB(DataBaseAddress)
 
-            newDf = pd.concat([dbDf, subjDf]).reset_index()
-            newDf = newDf[[ u'koreanName',  u'subjectName',   u'subjectInitial',
-                            u'group',       u'sex',           u'age',
-                            u'DOB',         u'scanDate',      u'timeline',
-                            u'studyname',   u'patientNumber', u'T1Number',
-                            u'DTINumber',   u'DKINumber',     u'RESTNumber',
-                            u'REST2Number', u'folderName',    u'backUpBy',
-                            u'note']]
+        newDf = pd.concat([dbDf, subjDf]).reset_index()
+        newDf = newDf[[ u'koreanName',  u'subjectName',   u'subjectInitial',
+                        u'group',       u'sex',           u'age',
+                        u'DOB',         u'scanDate',      u'timeline',
+                        u'studyname',   u'patientNumber', u'T1Number',
+                        u'DTINumber',   u'DKINumber',     u'RESTNumber',
+                        u'REST2Number', u'folderName',    u'backUpBy',
+                        u'note']]
 
-            newDf['koreanName'] = newDf['koreanName'].str.decode('utf-8')
-            newDf['note'] = newDf['note'].str.decode('utf-8')
-            newDf.to_excel(DataBaseAddress, 'Sheet1')
-            # os.chmod(DataBaseAddress, 0o2770)
+        newDf['koreanName'] = newDf['koreanName'].str.decode('utf-8')
+        newDf['note'] = newDf['note'].str.decode('utf-8')
+        newDf.to_excel(DataBaseAddress, 'Sheet1')
+        # os.chmod(DataBaseAddress, 0o2770)
 
-            updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
+        updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
 
     if motion:
         print 'Now, running motion_extraction'
