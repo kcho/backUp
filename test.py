@@ -1,6 +1,7 @@
 #from backUp import *
 #import backUp
 import os
+import shutil
 from os.path import join, basename, abspath, dirname, isdir
 import argparse
 import textwrap
@@ -61,19 +62,28 @@ modalityCountDict = {'DTI_BLIP_LR': 7,
 class subject(object):
     def __init__(self):
         self.location = abspath('TEST')
-        get_dicomDirs = lambda name,num: ['{}/{}.dcm'.format(name, x) for x in np.arange(num)]
+        get_dicomDirs = lambda name,num: ['{}/{}/{}/{}.dcm'.format(self.location, 'KANG_IK_CHO_77777777', name, x) for x in np.arange(num)]
         dicomDirDict = {}
         for name, num in folder_names_count.items():
-            dicomDirDict[name] = get_dicomDirs(name, num)
+            dicomDirDict[join(self.location, 'KANG_IK_CHO_77777777', name)] = get_dicomDirs(name, num)
 
         self.dicomDirs=dicomDirDict
         self.dirs = dicomDirDict.keys()
-        self.modalityMapping = [folder_names_modality[x] for x in self.dirs]
+
+        self.modalityMapping = [folder_names_modality[basename(x)] for x in self.dirs]
         print(self.modalityMapping)
         self.modalityDicomNum = modalityCountDict
+        allDicoms = []
+        for i in dicomDirDict.values():
+            for j in i:
+                allDicoms.append(j)
+        self.allDicomNum = len(allDicoms)
+
+        self.dirDicomNum = [(join(self.location, x[0]), x[1]) for x in zip(dicomDirDict.keys(), modalityCountDict.values())]
+        print(self.dirDicomNum)
         self.firstDicom = next(iter(self.dicomDirs.values()))[0]
         self.age = 10
-        self.dob = 19880916
+        self.dob = '19880916'
         self.id = 77777777
         self.surname = 'CHO'
         self.name = 'KANGIK'
@@ -92,6 +102,18 @@ class subject(object):
         self.targetDir = abspath('TEST_backUp')
 
 if __name__ == '__main__':
+    shutil.rmtree('TEST')
+    os.mkdir('TEST')
+    os.mkdir('TEST/KANG_IK_CHO_77777777')
+    subjectClass = subject()
+
+    for modality_raw_dir, dicoms in subjectClass.dicomDirs.items():
+        print(modality_raw_dir)
+        os.mkdir(modality_raw_dir)
+        for j in dicoms:
+            with open(j, 'wb') as f:
+                f.write(b'')
+
     log_file_in_hdd = join('TEST', "log.xlsx")
     log_df = copiedDirectoryCheck('TEST', log_file_in_hdd)
     inputDirs, log_df_updated = findNewDirs('TEST', log_df)
@@ -99,11 +121,58 @@ if __name__ == '__main__':
     if inputDirs == []:
         sys.exit('Everything have been backed up !')
 
-    backUp(inputDirs, 
-           'TEST_backUp', 
-           'database.xlsx', 
-           'spreadsheet.xlsx')
+    backUpTo = 'TEST_backUp'
+    DataBaseAddress = 'database.xlsx'
+    spreadsheet = 'spreadsheet.xlsx'
 
+    subjectClassList = []
+    for newDirectory in inputDirs:
+        subjClass = subject()
+        #checkFileNumbers(subjClass)
+        subjectClassList.append(subjClass)
+
+        executeCopy(subjClass)
+
+        subjDf = saveLog(subjClass)
+
+        dbDf = processDB(DataBaseAddress)
+
+        newDf = pd.concat([dbDf, subjDf]).reset_index()
+        newDf = newDf[[ u'koreanName',  
+                        u'subjectName',
+                        u'subjectInitial',
+                        u'group',
+                        u'sex',
+                        u'age',
+                        u'DOB',
+                        u'scanDate',
+                        u'timeline',
+                        u'studyname',
+                        u'patientNumber',
+                        u'T1',
+                        u'T2',
+                        u'REST_LR',
+                        u'REST_LR_SBRef',
+                        u'REST_BLIP_LR',
+                        u'REST_BLIP_RL',
+                        u'DTI_LR_1000',
+                        u'DTI_LR_2000',
+                        u'DTI_LR_3000',
+                        u'DTI_BLIP_LR',
+                        u'DTI_BLIP_RL',
+                        u'dx',
+                        u'folderName',
+                        u'backUpBy',
+                        u'note']]
+        #please confirm here
+
+        newDf['koreanName'] = newDf['koreanName'].str.decode('utf-8')
+        newDf['note'] = newDf['note'].str.decode('utf-8')
+        newDf.to_excel(DataBaseAddress, 'Sheet1')
+        # os.chmod(DataBaseAddress, 0o2770)
+
+        updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
+    print('Completed\n')
 
 ##execute copy test
 #try:

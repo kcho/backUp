@@ -129,7 +129,7 @@ def findNewDirs(backUpFrom, logDf):
         created on ( {1} )
         ------------------------------------
         '''.format(folderName,asciiTime))
-        response = raw_input('\nIs this the name of the subject you want to back up?'
+        response = input('\nIs this the name of the subject you want to back up?'
                              '[Yes/No/Quit/noCall] : ')
 
         if re.search('[yY]|[yY][Ee][Ss]',response):
@@ -182,7 +182,7 @@ def checkFileNumbers(subjClass):
             print('{modality} numbers does not seem right !  : {fileCount}'.format(
                     modality=modality,
                     fileCount=fileCount))
-            if re.search('[yY]|[yY][Ee][Ss]',raw_input('\tCheck ? [ Y / N ] : ')):
+            if re.search('[yY]|[yY][Ee][Ss]',input('\tCheck ? [ Y / N ] : ')):
                 print('\tOkay !')
             else:
                 print('\tExit due to unmatching file number')
