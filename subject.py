@@ -59,12 +59,12 @@ class subject(object):
                            'by ' + self.experimenter]))
         print('==============================')
 
-        self.koreanName = raw_input('Korean name  ? eg. 김민수: ')
-        self.note = raw_input('Any note ? : ')
-        self.group = raw_input('Group ? : ')
+        self.koreanName = input('Korean name  ? eg. 김민수: ')
+        self.note = input('Any note ? : ')
+        self.group = input('Group ? : ')
         self.numberForGroup = maxGroupNum(os.path.join(dbLoc, self.group))
-        self.study = raw_input('Study name ? : ')
-        self.timeline = raw_input('baseline or follow up ? eg) baseline, 6mfu, 1yfu, 2yfu : ') #bienseo: Solve unicode-error problems
+        self.study = input('Study name ? : ')
+        self.timeline = input('baseline or follow up ? eg) baseline, 6mfu, 1yfu, 2yfu : ') #bienseo: Solve unicode-error problems
         
         #bienseo: Classify timeline(baseline or follow up)
 
