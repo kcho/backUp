@@ -81,7 +81,7 @@ def backUp(inputDirs, backUpTo,
         # os.chmod(DataBaseAddress, 0o2770)
 
         updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
-    print 'Completed\n'
+    print('Completed\n')
 
 def noCall(logDf, backUpFrom, folderName):
     logDf = pd.concat([logDf,pd.DataFrame.from_dict({'directoryName': folderName,
@@ -93,7 +93,7 @@ def noCall(logDf, backUpFrom, folderName):
 def copiedDirectoryCheck(backUpFrom, logFileInUSB):
     if os.path.isfile(logFileInUSB):
         df = pd.read_excel(logFileInUSB,'Sheet1')
-        print 'Log loaded successfully'
+        print('Log loaded successfully')
     else:
         df = pd.DataFrame.from_dict({
                                      'directoryName': None,
@@ -123,12 +123,12 @@ def findNewDirs(backUpFrom, logDf):
         stat = os.stat(subjFolder)
         created = os.stat(subjFolder).st_ctime
         asciiTime = time.asctime(time.gmtime(created))
-        print '''
+        print('''
         ------------------------------------
         ------{0}
         created on ( {1} )
         ------------------------------------
-        '''.format(folderName,asciiTime)
+        '''.format(folderName,asciiTime))
         response = raw_input('\nIs this the name of the subject you want to back up?'
                              '[Yes/No/Quit/noCall] : ')
 
@@ -141,7 +141,7 @@ def findNewDirs(backUpFrom, logDf):
         else:
             continue
 
-    print toBackUp
+    print(toBackUp)
     return toBackUp, logDf
 
 
@@ -179,24 +179,24 @@ def checkFileNumbers(subjClass):
     # Check whether they have right numbers
     for modality, (modalityLocation, fileCount) in zip(subjClass.modalityMapping, subjClass.dirDicomNum):
         if checkList[modality] != fileCount:
-            print '{modality} numbers does not seem right !  : {fileCount}'.format(
+            print('{modality} numbers does not seem right !  : {fileCount}'.format(
                     modality=modality,
-                    fileCount=fileCount)
+                    fileCount=fileCount))
             if re.search('[yY]|[yY][Ee][Ss]',raw_input('\tCheck ? [ Y / N ] : ')):
-                print '\tOkay !'
+                print('\tOkay !')
             else:
-                print '\tExit due to unmatching file number'
+                print('\tExit due to unmatching file number')
                 sys.exit(0)
         else:
-            print 'Correct dicom number - \t {modality} : {fileCount}'.format(
+            print('Correct dicom number - \t {modality} : {fileCount}'.format(
                    modality=modality,
-                   fileCount=fileCount)
+                   fileCount=fileCount))
 
 
 def executeCopy(subjClass):
-    print '-----------------'
-    print 'Copying', subjClass.koreanName
-    print '-----------------'
+    print('-----------------')
+    print('Copying', subjClass.koreanName)
+    print('-----------------')
 
     totalNum = subjClass.allDicomNum
     accNum = 0
@@ -221,8 +221,8 @@ def processDB(DataBaseAddress):
         df['koreanName'] = df.koreanName.str.encode('utf-8')
         df['note'] = df.note.str.encode('utf-8')
 
-        print 'df in processDf first parag'
-        print df
+        print('df in processDf first parag')
+        print(df)
 
     else:
         df = pd.DataFrame.from_dict({ None: {
@@ -320,8 +320,8 @@ def server_connect(server, data_from):
     ssh.connect(server, username=username, password=password)
 
     with SCPClient(ssh.get_transport()) as scp:
-        print 'Connected to {server} and copying data'.format(server=server)
-        print '\t',data_from,'to',server+'@'+data_to
+        print('Connected to {server} and copying data'.format(server=server))
+        print('\t',data_from,'to',server+'@'+data_to)
         scp.put(data_from, data_to, recursive=True, preserve_times=True)
 
 

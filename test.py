@@ -9,7 +9,6 @@ import pandas as pd
 #import motion_extraction
 #import freesurfer
 #import freesurfer_summary
-import subject as subj
 import numpy as np
 from backUp import *
 
