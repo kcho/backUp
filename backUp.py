@@ -393,7 +393,7 @@ if __name__ == '__main__':
         inputDirs, log_df_updated = findNewDirs(backUpFrom,
                                                 log_df)
         log_df_updated.to_excel(log_file_in_hdd,'Sheet1')
-        if newDirectoryList == []:
+        if inputDirs == []:
             sys.exit('Everything have been backed up !')
 
         backUp(inputDirs, 
