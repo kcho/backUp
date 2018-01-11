@@ -6,12 +6,12 @@ import textwrap
 import pickle
 import backUp
 import pandas as pd
-import motion_extraction
-import freesurfer
-import freesurfer_summary
-
-
+#import motion_extraction
+#import freesurfer
+#import freesurfer_summary
 import subject as subj
+
+
 if os.path.isfile('subjectPickle'):
     with open('subjectPickle', 'r') as f:
         subjClass = pickle.load(f)
