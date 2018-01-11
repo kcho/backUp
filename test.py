@@ -26,9 +26,41 @@ folder_names_count = {'DTI_BLIP_LR_0011':7,
                       'T1_0002':224,
                       'T2_0003':224}
 
+folder_names_modality = {'DTI_BLIP_LR_0011':'DTI_BLIP_LR',
+                      'DTI_BLIP_RL_0012':'DTI_BLIP_RL',
+                      'DTI_MB3_LR_B1000_0008':'DTI_LR_1000',
+                      'DTI_MB3_LR_B2000_0009':'DTI_LR_2000',
+                      'DTI_MB3_LR_B3000_0010':'DTI_LR_3000',
+                      'REST_MB1_BLIP_LR_0006':'REST_BLIP_LR',
+                      'REST_MB1_BLIP_RL_0007':'REST_BLIP_RL',
+                      'REST_MB4_LR_SBREF_0005':'REST_LR',
+                      'REST_MB4_LR_SBREF_SBREF_0004':'REST_LR_SBRef',
+                      'SCOUT_HEAD_32CH_0001':'SCOUT',
+                      'T1_0002':'T1',
+                      'T2_0003':'T2'}
+
+
+
+
+
+
+
+modalityCountDict = {'DTI_BLIP_LR': 7,
+                        'DTI_BLIP_RL': 7,
+                        'DTI_LR_1000': 21,
+                        'DTI_LR_2000': 31,
+                        'DTI_LR_3000': 65,
+                        'REST_BLIP_LR': 3,
+                        'REST_BLIP_RL': 3,
+                        'REST_LR': 250,
+                        'REST_LR_SBRef': 1,
+                        'SCOUT': 9,
+                        'T1': 224,
+                        'T2': 224}
+
 class subject(object):
     def __init__(self):
-        self.location = abpath('TEST')
+        self.location = abspath('TEST')
         get_dicomDirs = lambda name,num: ['{}/{}.dcm'.format(name, x) for x in np.arange(num)]
         dicomDirDict = {}
         for name, num in folder_names_count.items():
@@ -36,8 +68,9 @@ class subject(object):
 
         self.dicomDirs=dicomDirDict
         self.dirs = dicomDirDict.keys()
-        self.modalityMapping = [modalityMapping(x) for x in self.dirs]
-        self.modalityDicomNum = dict(zip(self.modalityMapping, [x[1] for x in self.dirDicomNum]))
+        self.modalityMapping = [folder_names_modality[x] for x in self.dirs]
+        print(self.modalityMapping)
+        self.modalityDicomNum = modalityCountDict
         self.firstDicom = next(iter(self.dicomDirs.values()))[0]
         self.age = 10
         self.dob = 19880916
@@ -52,21 +85,18 @@ class subject(object):
         self.koreanName = '김민수'
         self.note = 'ha'
         self.group = 'CHR'
-        self.numberForGroup = maxGroupNum(os.path.join(dbLoc, self.group))
+        self.numberForGroup = '04'
         self.study = 'hoho'
         self.timeline = 'baseline'
         self.folderName = self.group + self.numberForGroup + '_' + self.initial
-        self.targetDir = join(dbLoc,
-                              self.group,
-                              self.folderName,
-                              self.timeline)    
+        self.targetDir = abspath('TEST_backUp')
 
 if __name__ == '__main__':
     log_file_in_hdd = join('TEST', "log.xlsx")
     log_df = copiedDirectoryCheck('TEST', log_file_in_hdd)
-    inputDirs, log_df_updated = findNewDirs('Test', log_df)
+    inputDirs, log_df_updated = findNewDirs('TEST', log_df)
     log_df_updated.to_excel(log_file_in_hdd,'Sheet1')
-    if newDirectoryList == []:
+    if inputDirs == []:
         sys.exit('Everything have been backed up !')
 
     backUp(inputDirs, 

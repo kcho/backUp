@@ -111,20 +111,3 @@ def modalityMapping(directory):
     return directory
 
 
-def maxGroupNum(backUpTo):
-    maxNumPattern=re.compile('\d+')
-
-    mx = 0
-    for string in maxNumPattern.findall(' '.join(os.listdir(backUpTo))):
-        if int(string) > mx:
-            mx = int(string)
-
-    highest = mx +1
-
-    if highest<10:
-        highest ='0'+str(highest)
-    else:
-        highest = str(highest)
-
-    return highest
-
