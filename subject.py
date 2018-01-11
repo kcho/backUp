@@ -28,10 +28,10 @@ class subject(object):
 
         self.dicomDirs = dicomDirDict
         self.dirs = dicomDirDict.keys()
-        self.allDicoms = reduce(lambda x, y: x + y, dicomDirDict.values())
-        self.allDicomNum = len(self.allDicoms)
-        self.dirDicomNum = [(x,len(y)) for (x,y) in dicomDirDict.iteritems()]
-        self.firstDicom = self.allDicoms[0]
+        #self.allDicoms = reduce(lambda x, y: x + y, dicomDirDict.values())
+        #self.allDicomNum = len(self.allDicoms)
+        self.dirDicomNum = [(x,len(y)) for (x,y) in dicomDirDict.items()]
+        self.firstDicom = next(iter(self.dicomDirs.values()))[0]
         self.modalityMapping = [modalityMapping(x) for x in self.dirs]
         self.modalityDicomNum = dict(zip(self.modalityMapping, [x[1] for x in self.dirDicomNum]))
 
