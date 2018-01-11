@@ -23,12 +23,12 @@ import updateSpreadSheet
 #import easyFreesurfer #bienseo: not work -> using freesurfer.py
 #import freesurfer_Summary # bienseo: not work
 import subject as subj
-import dtifit as bien #bienseo dti fa map
+#import dtifit as bien #bienseo dti fa map
 
 # scp modules for network dual back up
-import getpass
-from paramiko import SSHClient
-from scp import SCPClient
+#import getpass
+#from paramiko import SSHClient
+#from scp import SCPClient
 
 
 def backUp(inputDirs, backUpTo,
