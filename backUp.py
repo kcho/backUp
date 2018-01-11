@@ -19,7 +19,7 @@ import argparse
 import textwrap
 import pandas as pd
 import updateSpreadSheet
-import motionExtraction
+#import motionExtraction
 #import easyFreesurfer #bienseo: not work -> using freesurfer.py
 #import freesurfer_Summary # bienseo: not work
 import subject as subj

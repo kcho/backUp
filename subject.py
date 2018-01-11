@@ -52,12 +52,12 @@ class subject(object):
         self.date = ds.StudyDate
         self.experimenter = getpass.getuser()
 
-        print 'Now collecting information for'
-        print '=============================='
-        print '\n\t'.join([self.location, self.fullname, self.initial, self.id, self.dob, 
+        print('Now collecting information for')
+        print('==============================')
+        print('\n\t'.join([self.location, self.fullname, self.initial, self.id, self.dob, 
                            self.date, self.sex, ', '.join(self.modalityMapping),
-                           'by ' + self.experimenter])
-        print '=============================='
+                           'by ' + self.experimenter]))
+        print('==============================')
 
         self.koreanName = raw_input('Korean name  ? eg. 김민수: ')
         self.note = raw_input('Any note ? : ')
@@ -73,7 +73,7 @@ class subject(object):
            
             self.folderName = df.ix[(df.timeline=='baseline') & (df.patientNumber == int(self.id)), 'folderName'].values.tolist()[0]
             #bienseo: Show back up folder name
-            print '\n\n       Now Back up to       ' + self.folderName + '\n\n'
+            print('\n\n       Now Back up to       ' + self.folderName + '\n\n')
             self.targetDir = os.path.join(dbLoc,
                                           self.group,
                                           self.folderName,
