@@ -159,7 +159,7 @@ def calculate_age(born, today):
 def checkFileNumbers(subjClass):
     # Make a checking list
     checkList = {
-                 'T1': 208,
+                 'T1': 209,
                  'DTI': 65,
                  'DKI': 151,
                  'REST': 4060,
