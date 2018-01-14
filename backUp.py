@@ -159,20 +159,17 @@ def calculate_age(born, today):
 def checkFileNumbers(subjClass):
     # Make a checking list
     checkList = {
-                 'T1': 208,
-                 'DTI': 65,
-                 'DKI': 151,
-                 'REST': 4060,
-                 'REST2': 152,
-                 'REST2Baduk': 3132,
-                 'T2TSE': 25,
-                 'T2FLAIR': 25,
-                 'DTI_EXP': 40,
-                 'DTI_FA': 40,
-                 'DTI_COLFA': 40,
-                 'DKI_EXP': 200,
-                 'DKI_FA': 40,
-                 'DKI_COLFA': 40,
+                 'T1': 224,
+				 'T2': 224,
+				 'REST_LR': 250,
+				 'REST_LR_SBRef': 1,
+				 'REST_BLIP_LR': 3,
+				 'REST_BLIP_RL': 3,
+				 'DTI_LR_1000': 21,
+				 'DTI_LR_2000': 31,
+				 'DTI_LR_3000': 65,
+				 'DTI_BLIP_LR': 7,
+				 'DTI_BLIP_RL': 7,
                  'SCOUT': 9
                 }
 
