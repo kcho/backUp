@@ -23,7 +23,7 @@ class dicomSubjectDir:
         for root, dirs, files in os.walk(self.location):
             for oneFile in files:
                 if re.search('(dcm|ima)', oneFile, re.IGNORECASE):
-                    dicoms.append(os.path.join(root,oneFile))
+                    dicoms.append(join(root,oneFile))
 
         self.allDicomNum = len(dicoms)
 
@@ -43,7 +43,7 @@ class dicomSubjectDir:
 
         # Read first dicom
         #self.firstDicom = dicoms[0]
-        self.firstDicom = 'dicom_tmp.IMA'
+        self.firstDicom = 'dicom_tmp.IMA' # remove this later
 
 class subject(dicomSubjectDir):
     def __init__(self, subjectDir):
@@ -58,7 +58,7 @@ class subject(dicomSubjectDir):
         try:
             self.fullname = ''.join([x[0].upper()+x[1:].lower() for x in [self.surname, self.name.split(' ')[0], self.name.split(' ')[1]]])
             self.initial = self.surname[0]+''.join([x[0] for x in self.name.split(' ')])
-        except:
+        except: #for one syllabel korean names
             self.fullname = ''.join([x[0].upper()+x[1:].lower() for x in [self.surname, self.name]])
             self.initial = self.surname[0]+self.name[0]
         
@@ -83,6 +83,7 @@ class subject_extra(subject):
 
 class subject_full(subject_extra):
     def __init__(self, subjectDir, dbLoc):
+        super().__init__(subjectDir)
         self.numberForGroup = maxGroupNum(join(dbLoc, self.group))
         if self.timeline != 'baseline':
             df = pd.ExcelFile(join(dbLoc,'database','database.xls')).parse(0)
