@@ -70,7 +70,7 @@ def backUp(inputDirs, backUpTo,
 
         newDf['koreanName'] = newDf['koreanName'].str.decode('utf-8')
         newDf['note'] = newDf['note'].str.decode('utf-8')
-        newDf.to_excel(DataBaseAddress, 'Sheet1')
+        newDf.to_excel(DataBaseAddress, 'Sheet1', encode='utf-8')
         # os.chmod(DataBaseAddress, 0o2770)
 
         updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
@@ -193,28 +193,23 @@ def processDB(DataBaseAddress):
     if isfile(DataBaseAddress):
         excelFile = pd.ExcelFile(DataBaseAddress)
         df = excelFile.parse(excelFile.sheet_names[0])
-        print(df)
-        try:
-            df['koreanName'] = df.koreanName.str.encode('utf-8')
-            df['note'] = df.note.str.encode('utf-8')
-        except:
-            pass
-        print(df)
-
-        print('df in processDf first parag')
+        #df['koreanName'] = df['koreanName'].str.decode('utf-8')
+        #df['note'] = df['note'].str.decode('utf-8')
         print(df)
     else: #make new dict
-        db_dict = {}
-        for header in subj.info_header:
-            if header == 'subjectName':
-                db_dict[header] = [None] # for pandas dataframe
-            else:
-                db_dict[header] = None
+        #db_dict = {}
+        #for header in subj.info_header:
+            #if header == 'subjectName':
+                #db_dict[header] = [None] # for pandas dataframe
+            #else:
+                #db_dict[header] = None
 
-        for modalityName in subj.correct_modality_re_dict.keys():
-            db_dict[modalityName] = None
+        #for modalityName in subj.correct_modality_re_dict.keys():
+            #db_dict[modalityName] = None
 
-        df = pd.DataFrame(db_dict)
+        #df = pd.DataFrame(db_dict)
+        df = pd.DataFrame()
+
     return df
 
 def saveLog(sub):

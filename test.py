@@ -137,17 +137,16 @@ if __name__ == '__main__':
         subjClass = subject(newDirectory, backUpTo)
         #checkFileNumbers(subjClass)
         subjectClassList.append(subjClass)
-        print(subjClass.koreanName)
 
         executeCopy(subjClass)
 
         subjDf = saveLog(subjClass)
+        print(subjDf)
 
         dbDf = processDB(DataBaseAddress)
+        print(dbDf)
 
         newDf = pd.concat([dbDf, subjDf]).reset_index()
-        print(newDf)
-        print('-'*80)
         newDf = newDf[[ u'koreanName',  
                         u'subjectName',
                         u'subjectInitial',
@@ -174,15 +173,15 @@ if __name__ == '__main__':
                         u'folderName',
                         u'backUpBy',
                         u'note']]
+        print(newDf)
+        print('-'*80)
         #please confirm here
 
-        #newDf['koreanName'] = newDf['koreanName'].str.decode('utf-8')
-        #newDf['note'] = newDf['note'].str.decode('utf-8')
         newDf.to_excel(DataBaseAddress, 'Sheet1')
         # os.chmod(DataBaseAddress, 0o2770)
 
-        updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
-    print('Completed\n')
+        #updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
+    #print('Completed\n')
 
 ##execute copy test
 #try:
