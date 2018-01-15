@@ -97,6 +97,7 @@ class subject(subj.subject):
         self.numberForGroup = '04'
         self.study = 'hoho'
         self.timeline = 'baseline'
+        self.dx='hoho'
         self.folderName = self.group + self.numberForGroup + '_' + self.initial
         self.targetDir = abspath('TEST_backUp')
 
@@ -136,6 +137,7 @@ if __name__ == '__main__':
         subjClass = subject(newDirectory, backUpTo)
         #checkFileNumbers(subjClass)
         subjectClassList.append(subjClass)
+        print(subjClass.modalityDicomNum)
 
         executeCopy(subjClass)
 
@@ -144,8 +146,6 @@ if __name__ == '__main__':
         dbDf = processDB(DataBaseAddress)
 
         newDf = pd.concat([dbDf, subjDf]).reset_index()
-        print(newDf)
-        print(subjDf)
         newDf = newDf[[ u'koreanName',  
                         u'subjectName',
                         u'subjectInitial',

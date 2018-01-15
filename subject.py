@@ -13,6 +13,11 @@ import pandas as pd
 import getpass
 
 
+info_header = [u'koreanName',  u'subjectName', u'subjectInitial', 
+               u'group', u'sex', u'age', u'DOB', u'scanDate', 
+               u'timeline', u'studyname', u'patientNumber', 
+               u'dx', u'folderName', u'backUpBy', u'note']
+
 correct_modality_re_dict = {'T1': 224,
                             'T2': 224,
                             'REST_LR': 250,
@@ -46,15 +51,16 @@ def bcsModalityMapping(directory):
     correct_modality_re_dict = {'T1':t1,
                                 'T2':t2,
                                 'SCOUT':scout,
-                                'REST':rest,
-                                'REST_REF':restRef,
+                                'REST_LR':rest,
+                                'REST_LR_SBRef':restRef,
                                 'REST_BLIP_RL':restBlipRL,
                                 'REST_BLIP_LR':restBlipLR,
-                                'DTI_3000':dti3,
-                                'DTI_2000':dti2,
-                                'DTI_1000':dti1,
+                                'DTI_LR_3000':dti3,
+                                'DTI_LR_2000':dti2,
+                                'DTI_LR_1000':dti1,
                                 'DTI_BLIP_RL':dtiBlipRL,
-                                'DTI_BLIP_LR':dtiBlipLR}
+                                'DTI_BLIP_LR':dtiBlipLR,
+                                'SCOUT':scout}
 
     for modality_name, re_compile in correct_modality_re_dict.items():
         modality_basename = basename(directory)

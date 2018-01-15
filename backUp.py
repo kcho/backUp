@@ -189,26 +189,24 @@ def processDB(DataBaseAddress):
     if isfile(DataBaseAddress):
         excelFile = pd.ExcelFile(DataBaseAddress)
         df = excelFile.parse(excelFile.sheet_names[0])
-        df['koreanName'] = df.koreanName.str.encode('utf-8')
-        df['note'] = df.note.str.encode('utf-8')
+        print(df)
+        try:
+            df['koreanName'] = df.koreanName.str.encode('utf-8')
+            df['note'] = df.note.str.encode('utf-8')
+        except:
+            pass
+        print(df)
 
         print('df in processDf first parag')
         print(df)
     else: #make new dict
-        db_dict = {'subjectName': [None],
-                   'subjectInitial': None,
-                   'group': None,
-                   'sex': None,
-                   'DOB': None,
-                   'scanDate': None,
-                   'age': None,
-                   'timeline': None,
-                   'studyname': None,
-                   'note': None,
-                   'patientNumber': None,
-                   'folderName': None,
-                   'dx':None,
-                   'backUpBy': None}
+        db_dict = {}
+        for header in subj.info_header:
+            if header == 'subjectName':
+                db_dict[header] = [None] # for pandas dataframe
+            else:
+                db_dict[header] = None
+
         for modalityName in subj.correct_modality_re_dict.keys():
             db_dict[modalityName] = None
 
@@ -254,18 +252,12 @@ def makeLog(koreanName, group, timeline, dob, note,
             try:
                 allInfoRearranged[image] = modalityCount[image]
             except:
+                print(image, 'error')
                 allInfoRearranged[image] = 0
 
     allInfoDf = pd.DataFrame(allInfoRearranged)
 
-    headerList = [u'koreanName', u'subjectName', u'subjectInitial', 
-                  u'group',u'sex', u'age', u'DOB', u'scanDate', 
-                  u'timeline', u'studyname', u'patientNumber', 'dx']
-
-    allInfoDf = allInfoDf[headerList + \
-                          [x for x in images if x != 'SCOUT'] + \
-                          [u'folderName', u'backUpBy', u'note']
-                         ]
+    allInfoDf = allInfoDf[subj.info_header + [x for x in images if x != 'SCOUT']]
     return allInfoDf
 
 
