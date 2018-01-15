@@ -78,9 +78,9 @@ def backUp(inputDirs, backUpTo,
     print('Completed\n')
 
 def noCall(logDf, backUpFrom, folderName):
-    logDf = pd.concat([logDf,pd.DataFrame.from_dict({'directoryName': folderName,
-                                                     'backedUpBy': getpass.getuser(),
-                                                     'backedUpAt': time.ctime()},orient='index').T])
+    logDf = pd.concat([logDf,pd.DataFrame({'directoryName': [folderName],
+                                           'backedUpBy': getpass.getuser(),
+                                           'backedUpAt': time.ctime()}])
     return logDf
 
 
@@ -89,11 +89,8 @@ def copiedDirectoryCheck(backUpFrom, logFileInUSB):
         df = pd.read_excel(logFileInUSB,'Sheet1')
         print('Log loaded successfully')
     else:
-        df = pd.DataFrame.from_dict({
-                                     'directoryName': None,
-                                     'backedUpBy': None,
-                                     'backedUpAt': None
-                                    },orient='index').T
+        df = pd.DataFrame()
+        
     return df
 
 
@@ -193,21 +190,7 @@ def processDB(DataBaseAddress):
     if isfile(DataBaseAddress):
         excelFile = pd.ExcelFile(DataBaseAddress)
         df = excelFile.parse(excelFile.sheet_names[0])
-        #df['koreanName'] = df['koreanName'].str.decode('utf-8')
-        #df['note'] = df['note'].str.decode('utf-8')
-        print(df)
     else: #make new dict
-        #db_dict = {}
-        #for header in subj.info_header:
-            #if header == 'subjectName':
-                #db_dict[header] = [None] # for pandas dataframe
-            #else:
-                #db_dict[header] = None
-
-        #for modalityName in subj.correct_modality_re_dict.keys():
-            #db_dict[modalityName] = None
-
-        #df = pd.DataFrame(db_dict)
         df = pd.DataFrame()
 
     return df
