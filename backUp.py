@@ -262,7 +262,7 @@ def makeLog(koreanName, group, timeline, dob, note,
     age = calculate_age(dateOfBirth,formalSourceDate)
 
     # Image numbers
-    images = ['T1','DTI','DKI','REST','T2FLAIR','T2TSE','REST2']
+    images = ['T1','T2','REST_LR','REST_LR_SBRef','REST_BLIP_LR','REST_BLIP_RL','DTI_LR_1000','DTI_LR_2000','DTI_LR_3000','DTI_BLIP_LR','DTI_BLIP_RL']
     imageNumbers = {}
     for image in images:
         try:
@@ -290,10 +290,16 @@ def makeLog(koreanName, group, timeline, dob, note,
                             'backUpBy': user,
                             
                             'T1Number': imageNumbers['T1'],
-                            'DTINumber': imageNumbers['DTI'],
-                            'DKINumber': imageNumbers['DKI'],
-                            'RESTNumber': imageNumbers['REST'],
-                            'REST2Number': imageNumbers['REST2'] 
+                            'T2Number': imageNumbers['T2'],
+                            'RESTNumber': imageNumbers['REST_LR'],
+                            'REST_SBRef_Number': imageNumbers['REST_LR_SBRef'],
+                            'REST_BLIPLR_Number': imageNumbers['REST_BLIP_LR'],
+                            'REST_BLIPRL_Number': imageNumbers['REST_BLIP_RL'],
+                            'DTI1000Number': imageNumbers['DTI_LR_1000'],
+                            'DTI2000Number': imageNumbers['DTI_LR_2000'],
+                            'DTI3000Number': imageNumbers['DTI_LR_3000'],
+                            'DTI_BLIPLR_Number': imageNumbers['DTI_BLIP_LR'],
+                            'DTI_BLIPRL_Number': imageNumbers['DTI_BLIP_RL'],
                         }
     allInfoDf = pd.DataFrame.from_dict(allInfoRearranged,orient='index').T
     allInfoDf = allInfoDf[[ 
@@ -301,8 +307,10 @@ def makeLog(koreanName, group, timeline, dob, note,
                             u'group',       u'sex',           u'age',
                             u'DOB',         u'scanDate',      u'timeline',
                             u'studyname',   u'patientNumber', u'T1Number',
-                            u'DTINumber',   u'DKINumber',     u'RESTNumber',
-                            u'REST2Number', u'folderName',    u'backUpBy',
+                            u'T2Number',   u'RESTNumber',     u'REST_SBRef_Number',
+                            u'REST_BLIPLR_Number',   u'REST_BLIPRL_Number',     u'DTI1000Number',
+                            u'DTI2000Number',   u'DTI3000Number',     u'DTI_BLIPLR_Number',
+                            u'DTI_BLIPRL_Number',   u'folderName',    u'backUpBy',
                             u'note'
                          ]]
     return allInfoDf
