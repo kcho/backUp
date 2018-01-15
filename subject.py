@@ -14,6 +14,7 @@ import getpass
 
 from progressbar import AnimatedMarker,ProgressBar,Percentage,Bar
 
+
 class dicomSubjectDir:
     def __init__(self, subjectDir):
         self.location = abspath(subjectDir)
@@ -121,12 +122,24 @@ def modalityMapping(directory):
     dtiBlipRL = re.compile(r'dti\S*rl_\d{4}',re.IGNORECASE)
     dtiBlipLR = re.compile(r'dti\S*lr_\d{4}',re.IGNORECASE)
 
+    correct_modality_re_dict = {'T1':t1,
+                                'T2':t2,
+                                'SCOUT':scout,
+                                'REST':rest,
+                                'REST_REF':restRef,
+                                'REST_BLIP_RL':restBlipRL,
+                                'REST_BLIP_LR':restBlipLR,
+                                'DTI_3000':dti3,
+                                'DTI_2000':dti2,
+                                'DTI_1000':dti1,
+                                'DTI_BLIP_RL':dtiBlipRL,
+                                'DTI_BLIP_LR'dtiBlipLR}
 
-    for modality in (t1,'T1'),(t2,'T2'),(scout,'SCOUT'),(rest,'REST'),(restRef,'REST_REF'),(restBlipRL,'REST_BLIP_RL'),(restBlipLR,'REST_BLIP_LR'),(dti3,'DTI_3000'),(dti2,'DTI_2000'),(dti1,'DTI_1000'),(dtiBlipRL,'DTI_BLIP_RL'),(dtiBlipLR,'DTI_BLIP_LR'):
-        basename = os.path.basename(directory)
+    for modality_name, re_compile correct_modality_re_dict.iter():
+        basename = basename(directory)
         try:
-            matchingSource = modality[0].search(basename).group(0)
-            return modality[1]
+            matchingSource = re_compile.search(basename).group(0)
+            return modality_name
         except:
             pass
     return directory
