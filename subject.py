@@ -137,11 +137,7 @@ def maxGroupNum(backUpTo):
             mx = int(string)
 
     highest = mx +1
+    highest_zero_padded = '{0:03d}'.format(highest)
 
-    if highest<10:
-        highest ='0'+str(highest)
-    else:
-        highest = str(highest)
-
-    return highest
+    return highest_zero_padded
 
