@@ -199,40 +199,34 @@ def saveLog(sub):
     df = makeLog(sub.koreanName, sub.group, sub.timeline, sub.dob, sub.note,
                  sub.initial, sub.fullname, sub.sex, sub.id, sub.study,
                  sub.date, sub.folderName, sub.modalityDicomNum, sub.experimenter, sub.dx)
-    df.to_csv(os.path.join(sub.targetDir, 'log.txt'))
-    return df
 
-def makeLog(koreanName, group, timeline, dob, note,
-            subjInitial, fullname, sex, subjNum, studyname,
-            scanDate, folderName, modalityCount, user, dx):
-
-    dateOfBirth = date(int(dob[:4]), int(dob[4:6]), int(dob[6:]))
-    formalSourceDate = date(int(scanDate[:4]),int(scanDate[4:6]), int(scanDate[6:]))
+    dateOfBirth = date(int(sub.dob[:4]), int(sub.dob[4:6]), int(sub.dob[6:]))
+    formalSourceDate = date(int(sub.date[:4]),int(sub.date[4:6]), int(sub.date[6:]))
     age = calculate_age(dateOfBirth,formalSourceDate)
 
     # New dictionary  
-    allInfoRearranged = {'koreanName': [koreanName],
-                         'subjectName': fullname,
-                         'subjectInitial': subjInitial,
-                         'group': group,
-                         'sex': sex,
-                         'timeline': timeline,
-                         'studyname': studyname,
+    allInfoRearranged = {'koreanName': [sub.koreanName],
+                         'subjectName': sub.fullname,
+                         'subjectInitial': sub.initial,
+                         'group': sub.group,
+                         'sex': sub.sex,
+                         'timeline': sub.timeline,
+                         'studyname': sub.study,
                          'DOB': dateOfBirth.isoformat(),
                          'scanDate': formalSourceDate.isoformat(),
                          'age': age,
-                         'note': note,
-                         'patientNumber': subjNum,
-                         'folderName': folderName,
-                         'backUpBy': user,
-                         'dx':dx
+                         'note': sub.note,
+                         'patientNumber': sub.id,
+                         'folderName': sub.folderName,
+                         'backUpBy': sub.experimenter,
+                         'dx':sub.dx
                         }
     # Image numbers
     images = subj.correct_modality_re_dict.keys()
     for image in images:
         if not image == 'SCOUT':
             try:
-                allInfoRearranged[image] = modalityCount[image]
+                allInfoRearranged[image] = sub.modalityDicomNum[image]
             except:
                 print(image, 'error')
                 allInfoRearranged[image] = 0
@@ -240,8 +234,8 @@ def makeLog(koreanName, group, timeline, dob, note,
     allInfoDf = pd.DataFrame(allInfoRearranged)
 
     allInfoDf = allInfoDf[subj.info_header + [x for x in images if x != 'SCOUT']]
+    allInfoDf.to_csv(join(sub.targetDir, 'log.txt'))
     return allInfoDf
-
 
 def server_connect(server, data_from):
     ssh = SSHClient()
