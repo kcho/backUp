@@ -12,7 +12,24 @@ import re
 import pandas as pd
 import getpass
 
+
+correct_modality_re_dict = {'T1': 224,
+                            'T2': 224,
+                            'REST_LR': 250,
+                            'REST_LR_SBRef': 1,
+                            'REST_BLIP_LR': 3,
+                            'REST_BLIP_RL': 3,
+                            'DTI_LR_1000': 21,
+                            'DTI_LR_2000': 31,
+                            'DTI_LR_3000': 65,
+                            'DTI_BLIP_LR': 7,
+                            'DTI_BLIP_RL': 7,
+                            'SCOUT': 9}
+
 def bcsModalityMapping(directory):
+    '''
+    Change here for different number of dicom counts
+    '''
     t1 = re.compile(r'^t1_\d{4}',re.IGNORECASE)
     t2 = re.compile(r'^t2_\d{4}',re.IGNORECASE)
     scout = re.compile(r'scout',re.IGNORECASE)

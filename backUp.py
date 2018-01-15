@@ -37,7 +37,7 @@ def backUp(inputDirs, backUpTo,
     subjectClassList = []
     for newDirectory in inputDirs:
         subjClass = subj.subject(newDirectory, backUpTo)
-        checkFileNumbers(subjClass)
+        checkFileNumbers(subj.correct_modality_re_dict, subjClass)
         subjectClassList.append(subjClass)
 
         executeCopy(subjClass)
@@ -57,19 +57,9 @@ def backUp(inputDirs, backUpTo,
                         u'scanDate',
                         u'timeline',
                         u'studyname',
-                        u'patientNumber',
-                        u'T1',
-                        u'T2',
-                        u'REST_LR',
-                        u'REST_LR_SBRef',
-                        u'REST_BLIP_LR',
-                        u'REST_BLIP_RL',
-                        u'DTI_LR_1000',
-                        u'DTI_LR_2000',
-                        u'DTI_LR_3000',
-                        u'DTI_BLIP_LR',
-                        u'DTI_BLIP_RL',
-                        u'dx',
+                        u'patientNumber'] + \
+                       [subj.correct_modality_re_dict] + \
+                       [u'dx',
                         u'folderName',
                         u'backUpBy',
                         u'note']]
@@ -156,23 +146,7 @@ def calculate_age(born, today):
         return today.year - born.year
 
 
-def checkFileNumbers(subjClass):
-    # Make a checking list
-    checkList = {
-                 'T1': 224,
-                 'T2': 224,
-                 'REST_LR': 250,
-                 'REST_LR_SBRef': 1,
-                 'REST_BLIP_LR': 3,
-                 'REST_BLIP_RL': 3,
-                 'DTI_LR_1000': 21,
-                 'DTI_LR_2000': 31,
-                 'DTI_LR_3000': 65,
-                 'DTI_BLIP_LR': 7,
-                 'DTI_BLIP_RL': 7,
-                 'SCOUT': 9
-                }
-
+def checkFileNumbers(checkList, subjClass):
     # Check whether they have right numbers
     for modality, (modalityLocation, fileCount) in zip(subjClass.modalityMapping, subjClass.dirDicomNum):
         if checkList[modality] != fileCount:
@@ -261,58 +235,40 @@ def makeLog(koreanName, group, timeline, dob, note,
     formalSourceDate = date(int(scanDate[:4]),int(scanDate[4:6]), int(scanDate[6:]))
     age = calculate_age(dateOfBirth,formalSourceDate)
 
-    # Image numbers
-    images = ['T1','T2','REST_LR','REST_LR_SBRef','REST_BLIP_LR','REST_BLIP_RL','DTI_LR_1000','DTI_LR_2000','DTI_LR_3000','DTI_BLIP_LR','DTI_BLIP_RL']
-    imageNumbers = {}
-    for image in images:
-        try:
-            imageNumbers[image] = modalityCount[image]
-        except:
-            imageNumbers[image] = ''
-
     # New dictionary  
-    allInfoRearranged = {}
-    allInfoRearranged = {
-                            'koreanName': koreanName,
-                            'subjectName': fullname,
-                            'subjectInitial': subjInitial,
-                            'group': group,
-                            'sex': sex,
-                            'timeline': timeline,
-                            'studyname': studyname,
-                            'DOB': dateOfBirth.isoformat(),
-                            'scanDate': formalSourceDate.isoformat(),
-                            'age': age,
-
-                            'note': note,
-                            'patientNumber': subjNum,
-                            'folderName': folderName,
-                            'backUpBy': user,
-                            
-                            'T1Number': imageNumbers['T1'],
-                            'T2Number': imageNumbers['T2'],
-                            'RESTNumber': imageNumbers['REST_LR'],
-                            'REST_SBRef_Number': imageNumbers['REST_LR_SBRef'],
-                            'REST_BLIPLR_Number': imageNumbers['REST_BLIP_LR'],
-                            'REST_BLIPRL_Number': imageNumbers['REST_BLIP_RL'],
-                            'DTI1000Number': imageNumbers['DTI_LR_1000'],
-                            'DTI2000Number': imageNumbers['DTI_LR_2000'],
-                            'DTI3000Number': imageNumbers['DTI_LR_3000'],
-                            'DTI_BLIPLR_Number': imageNumbers['DTI_BLIP_LR'],
-                            'DTI_BLIPRL_Number': imageNumbers['DTI_BLIP_RL'],
+    allInfoRearranged = {'koreanName': koreanName,
+                         'subjectName': fullname,
+                         'subjectInitial': subjInitial,
+                         'group': group,
+                         'sex': sex,
+                         'timeline': timeline,
+                         'studyname': studyname,
+                         'DOB': dateOfBirth.isoformat(),
+                         'scanDate': formalSourceDate.isoformat(),
+                         'age': age,
+                         'note': note,
+                         'patientNumber': subjNum,
+                         'folderName': folderName,
+                         'backUpBy': user,
                         }
+    # Image numbers
+    images = subj.correct_modality_re_dict.keys()
+    for image in images:
+        if not image == 'SCOUT':
+            try:
+                allInfoRearranged[image] = modalityCount[image]
+            except:
+                allInfoRearranged[image] = 0
+
     allInfoDf = pd.DataFrame.from_dict(allInfoRearranged,orient='index').T
-    allInfoDf = allInfoDf[[ 
-                            u'koreanName',  u'subjectName',   u'subjectInitial',
-                            u'group',       u'sex',           u'age',
-                            u'DOB',         u'scanDate',      u'timeline',
-                            u'studyname',   u'patientNumber', u'T1Number',
-                            u'T2Number',   u'RESTNumber',     u'REST_SBRef_Number',
-                            u'REST_BLIPLR_Number',   u'REST_BLIPRL_Number',     u'DTI1000Number',
-                            u'DTI2000Number',   u'DTI3000Number',     u'DTI_BLIPLR_Number',
-                            u'DTI_BLIPRL_Number',   u'folderName',    u'backUpBy',
-                            u'note'
-                         ]]
+
+    allInfoDf = allInfoDf[[u'koreanName',  u'subjectName',   u'subjectInitial',
+                           u'group',       u'sex',           u'age',
+                           u'DOB',         u'scanDate',      u'timeline',
+                           u'studyname',   u'patientNumber'] + \
+                          [x for x in images if x != 'SCOUT'] + \
+                          [u'folderName',    u'backUpBy', u'note']
+                         ]
     return allInfoDf
 
 
