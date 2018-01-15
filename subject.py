@@ -85,12 +85,16 @@ class subject_full(subject_extra):
     def __init__(self, subjectDir, dbLoc):
         super().__init__(subjectDir)
         self.numberForGroup = maxGroupNum(join(dbLoc, self.group))
+
+        # If follow up, grep the previous data
         if self.timeline != 'baseline':
             df = pd.ExcelFile(join(dbLoc,'database','database.xls')).parse(0)
            
-            self.folderName = df.ix[(df.timeline=='baseline') & (df.patientNumber == int(self.id)), 'folderName'].values.tolist()[0]
-            #bienseo: Show back up folder name
-            print('\n\n       Now Back up to       ' + self.folderName + '\n\n')
+            # Match using the hospital ID
+            self.folderName = df.iloc[(df.timeline=='baseline') & (df.patientNumber == int(self.id)), 
+                                      'folderName'].values.tolist()[0]
+
+            print('\n\n\t\tNow Backing up to {}\n\n'.format(self.folderName)
             self.targetDir = join(dbLoc,
                                   self.group,
                                   self.folderName,
@@ -140,4 +144,3 @@ def maxGroupNum(backUpTo):
     highest_zero_padded = '{0:03d}'.format(highest)
 
     return highest_zero_padded
-
