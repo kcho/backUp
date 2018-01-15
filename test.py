@@ -137,7 +137,7 @@ if __name__ == '__main__':
         subjClass = subject(newDirectory, backUpTo)
         #checkFileNumbers(subjClass)
         subjectClassList.append(subjClass)
-        print(subjClass.modalityDicomNum)
+        print(subjClass.koreanName)
 
         executeCopy(subjClass)
 
@@ -146,6 +146,8 @@ if __name__ == '__main__':
         dbDf = processDB(DataBaseAddress)
 
         newDf = pd.concat([dbDf, subjDf]).reset_index()
+        print(newDf)
+        print('-'*80)
         newDf = newDf[[ u'koreanName',  
                         u'subjectName',
                         u'subjectInitial',
@@ -174,8 +176,8 @@ if __name__ == '__main__':
                         u'note']]
         #please confirm here
 
-        newDf['koreanName'] = newDf['koreanName'].str.decode('utf-8')
-        newDf['note'] = newDf['note'].str.decode('utf-8')
+        #newDf['koreanName'] = newDf['koreanName'].str.decode('utf-8')
+        #newDf['note'] = newDf['note'].str.decode('utf-8')
         newDf.to_excel(DataBaseAddress, 'Sheet1')
         # os.chmod(DataBaseAddress, 0o2770)
 

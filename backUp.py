@@ -43,10 +43,13 @@ def backUp(inputDirs, backUpTo,
         executeCopy(subjClass)
 
         subjDf = saveLog(subjClass)
+        print(subjDf)
 
         dbDf = processDB(DataBaseAddress)
 
         newDf = pd.concat([dbDf, subjDf]).reset_index()
+
+        # ordering
         newDf = newDf[[ u'koreanName',  
                         u'subjectName',
                         u'subjectInitial',
@@ -71,6 +74,7 @@ def backUp(inputDirs, backUpTo,
         # os.chmod(DataBaseAddress, 0o2770)
 
         updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
+
     print('Completed\n')
 
 def noCall(logDf, backUpFrom, folderName):
