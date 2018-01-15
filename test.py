@@ -66,36 +66,38 @@ modalityCountDict = {'DTI_BLIP_LR': 7,
 # subjClass = subj.subject(newDirectory, backUpTo)
 class subject(subj.subject):
     def __init__(self, subjectDir, dbLoc):
-        self.location = abspath('TEST')
-        get_dicomDirs = lambda name,num: ['{}/{}/{}/{}.dcm'.format(self.location, 'KANG_IK_CHO_77777777', name, x) for x in np.arange(num)]
-        dicomDirDict = {}
-        for name, num in folder_names_count.items():
-            dicomDirDict[join(self.location, 'KANG_IK_CHO_77777777', name)] = get_dicomDirs(name, num)
+        super().__init__(subjectDir)
+        #self.location = abspath('TEST')
+        #get_dicomDirs = lambda name,num: ['{}/{}/{}/{}.dcm'.format(self.location, 'KANG_IK_CHO_77777777', name, x) for x in np.arange(num)]
+        #dicomDirDict = {}
+        #for name, num in folder_names_count.items():
+            #dicomDirDict[join(self.location, 'KANG_IK_CHO_77777777', name)] = get_dicomDirs(name, num)
 
-        self.dicomDirs=dicomDirDict
-        self.dirs = dicomDirDict.keys()
+        #self.dicomDirs=dicomDirDict
+        #self.dirs = dicomDirDict.keys()
 
-        self.modalityMapping = [folder_names_modality[basename(x)] for x in self.dirs]
-        print(self.modalityMapping)
-        self.modalityDicomNum = modalityCountDict
-        allDicoms = []
-        for i in dicomDirDict.values():
-            for j in i:
-                allDicoms.append(j)
-        self.allDicomNum = len(allDicoms)
+        #self.modalityMapping = [folder_names_modality[basename(x)] for x in self.dirs]
+        #print(self.modalityMapping)
+        #self.modalityDicomNum = modalityCountDict
+        #allDicoms = []
+        #for i in dicomDirDict.values():
+            #for j in i:
+                #allDicoms.append(j)
+        #self.allDicomNum = len(allDicoms)
 
-        self.dirDicomNum = [(join(self.location, x[0]), x[1]) for x in zip(dicomDirDict.keys(), modalityCountDict.values())]
-        print(self.dirDicomNum)
-        self.firstDicom = next(iter(self.dicomDirs.values()))[0]
-        self.age = 10
-        self.dob = '19880916'
-        self.id = 77777777
-        self.surname = 'CHO'
-        self.name = 'KANGIK'
-        self.fullname = 'KangIkCho'
-        self.initial = 'KIC'
-        self.sex = 'M'
-        self.date = '20180111'
+        #self.dirDicomNum = [(join(self.location, x[0]), x[1]) for x in zip(dicomDirDict.keys(), modalityCountDict.values())]
+        #print(self.dirDicomNum)
+        #self.firstDicom = next(iter(self.dicomDirs.values()))[0]
+        #self.age = 10
+        #self.dob = '19880916'
+        #self.id = 77777777
+        #self.surname = 'CHO'
+        #self.name = 'KANGIK'
+        #self.fullname = 'KangIkCho'
+        #self.initial = 'KIC'
+        #self.sex = 'M'
+        #self.date = '20180111'
+        #self.experimenter = 'kcho'
         self.experimenter = 'kcho'
         self.koreanName = '김민수'
         self.note = 'ha'
@@ -139,11 +141,7 @@ if __name__ == '__main__':
 
     subjectClassList = []
     for newDirectory in inputDirs:
-        dicomSubjectDir_class = subj.dicomSubjectDir(newDirectory)
-        print(dicomSubjectDir_class)
-
         subjClass = subject(newDirectory, backUpTo)
-        print(dir(subjClass))
         #checkFileNumbers(subjClass)
         subjectClassList.append(subjClass)
 
@@ -154,6 +152,7 @@ if __name__ == '__main__':
         dbDf = processDB(DataBaseAddress)
 
         newDf = pd.concat([dbDf, subjDf]).reset_index()
+        print(newDf)
         print(subjDf)
         newDf = newDf[[ u'koreanName',  
                         u'subjectName',

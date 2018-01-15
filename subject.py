@@ -25,6 +25,8 @@ class dicomSubjectDir:
                 if re.search('(dcm|ima)', oneFile, re.IGNORECASE):
                     dicoms.append(os.path.join(root,oneFile))
 
+        self.allDicomNum = len(dicoms)
+
         # Dicom directory names
         dicomDirs = set([dirname(x) for x in dicoms])
         self.dirs = dicomDirs

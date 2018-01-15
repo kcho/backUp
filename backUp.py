@@ -160,16 +160,16 @@ def checkFileNumbers(subjClass):
     # Make a checking list
     checkList = {
                  'T1': 224,
-				 'T2': 224,
-				 'REST_LR': 250,
-				 'REST_LR_SBRef': 1,
-				 'REST_BLIP_LR': 3,
-				 'REST_BLIP_RL': 3,
-				 'DTI_LR_1000': 21,
-				 'DTI_LR_2000': 31,
-				 'DTI_LR_3000': 65,
-				 'DTI_BLIP_LR': 7,
-				 'DTI_BLIP_RL': 7,
+                 'T2': 224,
+                 'REST_LR': 250,
+                 'REST_LR_SBRef': 1,
+                 'REST_BLIP_LR': 3,
+                 'REST_BLIP_RL': 3,
+                 'DTI_LR_1000': 21,
+                 'DTI_LR_2000': 31,
+                 'DTI_LR_3000': 65,
+                 'DTI_BLIP_LR': 7,
+                 'DTI_BLIP_RL': 7,
                  'SCOUT': 9
                 }
 
