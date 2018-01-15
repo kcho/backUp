@@ -231,7 +231,7 @@ def makeLog(koreanName, group, timeline, dob, note,
     age = calculate_age(dateOfBirth,formalSourceDate)
 
     # New dictionary  
-    allInfoRearranged = {'koreanName': koreanName,
+    allInfoRearranged = {'koreanName': [koreanName],
                          'subjectName': fullname,
                          'subjectInitial': subjInitial,
                          'group': group,
@@ -255,14 +255,15 @@ def makeLog(koreanName, group, timeline, dob, note,
             except:
                 allInfoRearranged[image] = 0
 
-    allInfoDf = pd.DataFrame.from_dict(allInfoRearranged,orient='index').T
+    allInfoDf = pd.DataFrame(allInfoRearranged)
 
-    allInfoDf = allInfoDf[[u'koreanName',  u'subjectName',   u'subjectInitial',
-                           u'group',       u'sex',           u'age',
-                           u'DOB',         u'scanDate',      u'timeline',
-                           u'studyname',   u'patientNumber'] + \
+    headerList = [u'koreanName', u'subjectName', u'subjectInitial', 
+                  u'group',u'sex', u'age', u'DOB', u'scanDate', 
+                  u'timeline', u'studyname', u'patientNumber']
+
+    allInfoDf = allInfoDf[headerList + \
                           [x for x in images if x != 'SCOUT'] + \
-                          [u'folderName',    u'backUpBy', u'note']
+                          [u'folderName', u'backUpBy', u'note']
                          ]
     return allInfoDf
 
