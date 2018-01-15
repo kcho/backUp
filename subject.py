@@ -87,21 +87,21 @@ class subject(object):
 
 
 def modalityMapping(directory):
-    t1 = re.compile(r'tfl|[^s]t1',re.IGNORECASE)
-    dti = re.compile(r'dti\S*\(.\)_\d+\S*',re.IGNORECASE)
-    dtiFA = re.compile(r'dti.*[^l]fa',re.IGNORECASE)
-    dtiEXP = re.compile(r'dti.*exp',re.IGNORECASE)
-    dtiCOLFA = re.compile(r'dti.*colfa',re.IGNORECASE)
-    dki = re.compile(r'dki\S*\(.\)_\d+\S*',re.IGNORECASE)
-    dkiFA = re.compile(r'dki.*[^l]fa',re.IGNORECASE)
-    dkiEXP = re.compile(r'dki.*exp',re.IGNORECASE)
-    dkiCOLFA = re.compile(r'dki.*colfa',re.IGNORECASE)
-    rest = re.compile(r'rest|rest\S*4060',re.IGNORECASE)
-    t2flair = re.compile(r'flair',re.IGNORECASE)
-    t2tse = re.compile(r'tse',re.IGNORECASE)
+    t1 = re.compile(r'^t1_\d{4}',re.IGNORECASE)
+    t2 = re.compile(r'^t2_\d{4}',re.IGNORECASE)
     scout = re.compile(r'scout',re.IGNORECASE)
+    rest = re.compile(r'rest\S*lr_sbref_\d{4}',re.IGNORECASE)
+    restRef = re.compile(r'rest\S*lr(_sbref){2}',re.IGNORECASE)
+    restBlipRL = re.compile(r'rest\S*blip_rl',re.IGNORECASE)
+    restBlipLR = re.compile(r'rest\S*blip_lr',re.IGNORECASE)
+    dti3 = re.compile(r'dti\S*B30',re.IGNORECASE)
+    dti2 = re.compile(r'dti\S*B20',re.IGNORECASE)
+    dti1 = re.compile(r'dti\S*B10',re.IGNORECASE)
+    dtiBlipRL = re.compile(r'dti\S*rl_\d{4}',re.IGNORECASE)
+    dtiBlipLR = re.compile(r'dti\S*lr_\d{4}',re.IGNORECASE)
 
-    for modality in (t1,'T1'),(rest,'REST'),(dki,"DKI"),(dti,'DTI'),(t2flair,'T2FLAIR'),(t2tse,'T2TSE'),(dtiFA,'DTI_FA'),(dtiEXP,   'DTI_EXP'),(dtiCOLFA,'DTI_COLFA'),(dkiFA,'DKI_FA'),(dkiEXP,'DKI_EXP'),(dkiCOLFA,'DKI_COLFA'), (scout, 'SCOUT'):
+
+    for modality in (t1,'T1'),(t2,'T2'),(scout,'SCOUT'),(rest,'REST'),(restRef,'REST_REF'),(restBlipRL,'REST_BLIP_RL'),(restBlipLR,'REST_BLIP_LR'),(dti3,'DTI_3000'),(dti2,'DTI_2000'),(dti1,'DTI_1000'),(dtiBlipRL,'DTI_BLIP_RL'),(dtiBlipLR,'DTI_BLIP_LR'):
         basename = os.path.basename(directory)
         try:
             matchingSource = modality[0].search(basename).group(0)
@@ -110,4 +110,21 @@ def modalityMapping(directory):
             pass
     return directory
 
+
+def maxGroupNum(backUpTo):
+    maxNumPattern=re.compile('\d+')
+
+    mx = 0
+    for string in maxNumPattern.findall(' '.join(os.listdir(backUpTo))):
+        if int(string) > mx:
+            mx = int(string)
+
+    highest = mx +1
+
+    if highest<10:
+        highest ='0'+str(highest)
+    else:
+        highest = str(highest)
+
+    return highest
 
