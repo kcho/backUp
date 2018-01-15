@@ -132,6 +132,7 @@ class subject_extra(subject):
         self.note = input('Any note ? : ')
         self.group = input('Group ? : ')
         self.study = input('Study name ? : ')
+        self.dx = input('Study name ? : ')
         self.timeline = input('baseline or follow up ? eg) baseline, 6mfu, 1yfu, 2yfu : ')
 
 class subject_full(subject_extra):
