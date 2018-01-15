@@ -204,10 +204,10 @@ def processDB(DataBaseAddress):
                    'age': None,
                    'timeline': None,
                    'studyname': None,
-                   'folderName': None,
                    'note': None,
                    'patientNumber': None,
                    'folderName': None,
+                   'dx':None,
                    'backUpBy': None}
         for modalityName in subj.correct_modality_re_dict.keys():
             db_dict[modalityName] = None
@@ -218,13 +218,13 @@ def processDB(DataBaseAddress):
 def saveLog(sub):
     df = makeLog(sub.koreanName, sub.group, sub.timeline, sub.dob, sub.note,
                  sub.initial, sub.fullname, sub.sex, sub.id, sub.study,
-                 sub.date, sub.folderName, sub.modalityDicomNum, sub.experimenter)
+                 sub.date, sub.folderName, sub.modalityDicomNum, sub.experimenter, sub.dx)
     df.to_csv(os.path.join(sub.targetDir, 'log.txt'))
     return df
 
 def makeLog(koreanName, group, timeline, dob, note,
             subjInitial, fullname, sex, subjNum, studyname,
-            scanDate, folderName, modalityCount, user):
+            scanDate, folderName, modalityCount, user, dx):
 
     dateOfBirth = date(int(dob[:4]), int(dob[4:6]), int(dob[6:]))
     formalSourceDate = date(int(scanDate[:4]),int(scanDate[4:6]), int(scanDate[6:]))
@@ -245,6 +245,7 @@ def makeLog(koreanName, group, timeline, dob, note,
                          'patientNumber': subjNum,
                          'folderName': folderName,
                          'backUpBy': user,
+                         'dx':dx
                         }
     # Image numbers
     images = subj.correct_modality_re_dict.keys()
@@ -259,7 +260,7 @@ def makeLog(koreanName, group, timeline, dob, note,
 
     headerList = [u'koreanName', u'subjectName', u'subjectInitial', 
                   u'group',u'sex', u'age', u'DOB', u'scanDate', 
-                  u'timeline', u'studyname', u'patientNumber']
+                  u'timeline', u'studyname', u'patientNumber', 'dx']
 
     allInfoDf = allInfoDf[headerList + \
                           [x for x in images if x != 'SCOUT'] + \
