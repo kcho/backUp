@@ -12,9 +12,6 @@ import re
 import pandas as pd
 import getpass
 
-from progressbar import AnimatedMarker,ProgressBar,Percentage,Bar
-
-
 class dicomSubjectDir:
     def __init__(self, subjectDir):
         self.location = abspath(subjectDir)
@@ -65,11 +62,11 @@ class subject(dicomSubjectDir):
         
         self.sex = ds.PatientSex
         self.date = ds.StudyDate
+        self.experimenter = getpass.getuser()
 
 class subject_extra(subject):
     def __init__(self, subjectDir):
         super().__init__(subjectDir)
-        self.experimenter = getpass.getuser()
         print('Now collecting information for')
         print('==============================')
         print('\n\t'.join([self.location, self.fullname, self.initial, self.id, self.dob, 
@@ -100,6 +97,7 @@ class subject_full(subject_extra):
                                   self.group,
                                   self.folderName,
                                   self.timeline)
+        # If baseline
         else:
             self.folderName = self.group + self.numberForGroup + '_' + self.initial
             self.targetDir = join(dbLoc,
