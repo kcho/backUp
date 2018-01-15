@@ -12,7 +12,7 @@ import time
 from datetime import date
 import sys
 import os
-from os.path import join, basename, dirname, isdir
+from os.path import join, basename, dirname, isdir, isfile
 import shutil
 from progressbar import AnimatedMarker, ProgressBar, Percentage, Bar
 import argparse
@@ -186,7 +186,7 @@ def executeCopy(subjClass):
 
 
 def processDB(DataBaseAddress):
-    if os.path.isfile(DataBaseAddress):
+    if isfile(DataBaseAddress):
         excelFile = pd.ExcelFile(DataBaseAddress)
         df = excelFile.parse(excelFile.sheet_names[0])
         df['koreanName'] = df.koreanName.str.encode('utf-8')
@@ -194,30 +194,25 @@ def processDB(DataBaseAddress):
 
         print('df in processDf first parag')
         print(df)
+    else: #make new dict
+        db_dict = {'subjectName': [None],
+                   'subjectInitial': None,
+                   'group': None,
+                   'sex': None,
+                   'DOB': None,
+                   'scanDate': None,
+                   'age': None,
+                   'timeline': None,
+                   'studyname': None,
+                   'folderName': None,
+                   'note': None,
+                   'patientNumber': None,
+                   'folderName': None,
+                   'backUpBy': None}
+        for modalityName in subj.correct_modality_re_dict.keys():
+            db_dict[modalityName] = None
 
-    else:
-        df = pd.DataFrame.from_dict({ None: {
-                                               'subjectName': None,
-                                               'subjectInitial': None,
-                                               'group': None,
-                                               'sex': None,
-                                               'DOB': None,
-                                               'scanDate': None,
-                                               'age': None,
-                                               'timeline': None,
-                                               'studyname': None,
-                                               'folderName': None,
-                                               'T1Number': None,
-                                               'DTINumber': None,
-                                               'DKINumber': None,
-                                               'RESTNumber': None,
-                                               'note': None,
-                                               'patientNumber': None,
-                                               'folderName': None,
-                                               'backUpBy': None
-                                            }
-                                     },orient='index'
-                                    )
+        df = pd.DataFrame(db_dict)
     return df
 
 def saveLog(sub):
