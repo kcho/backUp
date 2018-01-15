@@ -80,7 +80,7 @@ def backUp(inputDirs, backUpTo,
 def noCall(logDf, backUpFrom, folderName):
     logDf = pd.concat([logDf,pd.DataFrame({'directoryName': [folderName],
                                            'backedUpBy': getpass.getuser(),
-                                           'backedUpAt': time.ctime()}])
+                                           'backedUpAt': time.ctime()})])
     return logDf
 
 
@@ -107,7 +107,10 @@ def findNewDirs(backUpFrom, logDf):
                    and not item.startswith('$')
                    and not item.startswith('.')]
 
-    newDirectories = [item for item in directories if not item in [str(x).encode("ascii") for x in logDf.directoryName]]
+    if len(logDf) == 0:
+        newDirectories = directories
+    else:
+        newDirectories = [item for item in directories if not item in [str(x).encode("ascii") for x in logDf.directoryName]]
 
     for folderName in newDirectories:
         subjFolder = os.path.join(backUpFrom, folderName)
@@ -196,10 +199,6 @@ def processDB(DataBaseAddress):
     return df
 
 def saveLog(sub):
-    df = makeLog(sub.koreanName, sub.group, sub.timeline, sub.dob, sub.note,
-                 sub.initial, sub.fullname, sub.sex, sub.id, sub.study,
-                 sub.date, sub.folderName, sub.modalityDicomNum, sub.experimenter, sub.dx)
-
     dateOfBirth = date(int(sub.dob[:4]), int(sub.dob[4:6]), int(sub.dob[6:]))
     formalSourceDate = date(int(sub.date[:4]),int(sub.date[4:6]), int(sub.date[6:]))
     age = calculate_age(dateOfBirth,formalSourceDate)

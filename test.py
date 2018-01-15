@@ -126,6 +126,7 @@ if __name__ == '__main__':
 
     log_file_in_hdd = join('TEST', "log.xlsx")
     log_df = copiedDirectoryCheck('TEST', log_file_in_hdd)
+    print(log_df)
     inputDirs, log_df_updated = findNewDirs('TEST', log_df)
     log_df_updated.to_excel(log_file_in_hdd,'Sheet1')
     if inputDirs == []:
