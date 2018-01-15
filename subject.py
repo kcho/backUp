@@ -28,10 +28,10 @@ class subject(object):
 
         self.dicomDirs = dicomDirDict
         self.dirs = dicomDirDict.keys()
-        self.allDicoms = reduce(lambda x, y: x + y, dicomDirDict.values())
-        self.allDicomNum = len(self.allDicoms)
-        self.dirDicomNum = [(x,len(y)) for (x,y) in dicomDirDict.iteritems()]
-        self.firstDicom = self.allDicoms[0]
+        #self.allDicoms = reduce(lambda x, y: x + y, dicomDirDict.values())
+        #self.allDicomNum = len(self.allDicoms)
+        self.dirDicomNum = [(x,len(y)) for (x,y) in dicomDirDict.items()]
+        self.firstDicom = next(iter(self.dicomDirs.values()))[0]
         self.modalityMapping = [modalityMapping(x) for x in self.dirs]
         self.modalityDicomNum = dict(zip(self.modalityMapping, [x[1] for x in self.dirDicomNum]))
 
@@ -52,19 +52,19 @@ class subject(object):
         self.date = ds.StudyDate
         self.experimenter = getpass.getuser()
 
-        print 'Now collecting information for'
-        print '=============================='
-        print '\n\t'.join([self.location, self.fullname, self.initial, self.id, self.dob, 
+        print('Now collecting information for')
+        print('==============================')
+        print('\n\t'.join([self.location, self.fullname, self.initial, self.id, self.dob, 
                            self.date, self.sex, ', '.join(self.modalityMapping),
-                           'by ' + self.experimenter])
-        print '=============================='
+                           'by ' + self.experimenter]))
+        print('==============================')
 
-        self.koreanName = raw_input('Korean name  ? eg. 김민수: ')
-        self.note = raw_input('Any note ? : ')
-        self.group = raw_input('Group ? : ')
+        self.koreanName = input('Korean name  ? eg. 김민수: ')
+        self.note = input('Any note ? : ')
+        self.group = input('Group ? : ')
         self.numberForGroup = maxGroupNum(os.path.join(dbLoc, self.group))
-        self.study = raw_input('Study name ? : ')
-        self.timeline = raw_input('baseline or follow up ? eg) baseline, 6mfu, 1yfu, 2yfu : ') #bienseo: Solve unicode-error problems
+        self.study = input('Study name ? : ')
+        self.timeline = input('baseline or follow up ? eg) baseline, 6mfu, 1yfu, 2yfu : ') #bienseo: Solve unicode-error problems
         
         #bienseo: Classify timeline(baseline or follow up)
 
@@ -73,7 +73,7 @@ class subject(object):
            
             self.folderName = df.ix[(df.timeline=='baseline') & (df.patientNumber == int(self.id)), 'folderName'].values.tolist()[0]
             #bienseo: Show back up folder name
-            print '\n\n       Now Back up to       ' + self.folderName + '\n\n'
+            print('\n\n       Now Back up to       ' + self.folderName + '\n\n')
             self.targetDir = os.path.join(dbLoc,
                                           self.group,
                                           self.folderName,
@@ -109,7 +109,6 @@ def modalityMapping(directory):
         except:
             pass
     return directory
-
 
 
 def maxGroupNum(backUpTo):

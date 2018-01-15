@@ -19,16 +19,16 @@ import argparse
 import textwrap
 import pandas as pd
 import updateSpreadSheet
-import motionExtraction
+#import motionExtraction
 #import easyFreesurfer #bienseo: not work -> using freesurfer.py
 #import freesurfer_Summary # bienseo: not work
 import subject as subj
-import dtifit as bien #bienseo dti fa map
+#import dtifit as bien #bienseo dti fa map
 
 # scp modules for network dual back up
-import getpass
-from paramiko import SSHClient
-from scp import SCPClient
+#import getpass
+#from paramiko import SSHClient
+#from scp import SCPClient
 
 
 def backUp(inputDirs, backUpTo,
@@ -47,13 +47,33 @@ def backUp(inputDirs, backUpTo,
         dbDf = processDB(DataBaseAddress)
 
         newDf = pd.concat([dbDf, subjDf]).reset_index()
-        newDf = newDf[[ u'koreanName',  u'subjectName',   u'subjectInitial',
-                        u'group',       u'sex',           u'age',
-                        u'DOB',         u'scanDate',      u'timeline',
-                        u'studyname',   u'patientNumber', u'T1Number',
-                        u'DTINumber',   u'DKINumber',     u'RESTNumber',
-                        u'REST2Number', u'folderName',    u'backUpBy',
+        newDf = newDf[[ u'koreanName',  
+                        u'subjectName',
+                        u'subjectInitial',
+                        u'group',
+                        u'sex',
+                        u'age',
+                        u'DOB',
+                        u'scanDate',
+                        u'timeline',
+                        u'studyname',
+                        u'patientNumber',
+                        u'T1',
+                        u'T2',
+                        u'REST_LR',
+                        u'REST_LR_SBRef',
+                        u'REST_BLIP_LR',
+                        u'REST_BLIP_RL',
+                        u'DTI_LR_1000',
+                        u'DTI_LR_2000',
+                        u'DTI_LR_3000',
+                        u'DTI_BLIP_LR',
+                        u'DTI_BLIP_RL',
+                        u'dx',
+                        u'folderName',
+                        u'backUpBy',
                         u'note']]
+        #please confirm here
 
         newDf['koreanName'] = newDf['koreanName'].str.decode('utf-8')
         newDf['note'] = newDf['note'].str.decode('utf-8')
@@ -61,9 +81,7 @@ def backUp(inputDirs, backUpTo,
         # os.chmod(DataBaseAddress, 0o2770)
 
         updateSpreadSheet.main(False, DataBaseAddress, spreadsheet)#False
-
-    print 'Completed\n'
- 
+    print('Completed\n')
 
 def noCall(logDf, backUpFrom, folderName):
     logDf = pd.concat([logDf,pd.DataFrame.from_dict({'directoryName': folderName,
@@ -75,7 +93,7 @@ def noCall(logDf, backUpFrom, folderName):
 def copiedDirectoryCheck(backUpFrom, logFileInUSB):
     if os.path.isfile(logFileInUSB):
         df = pd.read_excel(logFileInUSB,'Sheet1')
-        print 'Log loaded successfully'
+        print('Log loaded successfully')
     else:
         df = pd.DataFrame.from_dict({
                                      'directoryName': None,
@@ -105,13 +123,13 @@ def findNewDirs(backUpFrom, logDf):
         stat = os.stat(subjFolder)
         created = os.stat(subjFolder).st_ctime
         asciiTime = time.asctime(time.gmtime(created))
-        print '''
+        print('''
         ------------------------------------
         ------{0}
         created on ( {1} )
         ------------------------------------
-        '''.format(folderName,asciiTime)
-        response = raw_input('\nIs this the name of the subject you want to back up?'
+        '''.format(folderName,asciiTime))
+        response = input('\nIs this the name of the subject you want to back up?'
                              '[Yes/No/Quit/noCall] : ')
 
         if re.search('[yY]|[yY][Ee][Ss]',response):
@@ -123,7 +141,7 @@ def findNewDirs(backUpFrom, logDf):
         else:
             continue
 
-    print toBackUp
+    print(toBackUp)
     return toBackUp, logDf
 
 
@@ -141,44 +159,41 @@ def calculate_age(born, today):
 def checkFileNumbers(subjClass):
     # Make a checking list
     checkList = {
-                 'T1': 208,
-                 'DTI': 65,
-                 'DKI': 151,
-                 'REST': 4060,
-                 'REST2': 152,
-                 'REST2Baduk': 3132,
-                 'T2TSE': 25,
-                 'T2FLAIR': 25,
-                 'DTI_EXP': 40,
-                 'DTI_FA': 40,
-                 'DTI_COLFA': 40,
-                 'DKI_EXP': 200,
-                 'DKI_FA': 40,
-                 'DKI_COLFA': 40,
+                 'T1': 224,
+				 'T2': 224,
+				 'REST_LR': 250,
+				 'REST_LR_SBRef': 1,
+				 'REST_BLIP_LR': 3,
+				 'REST_BLIP_RL': 3,
+				 'DTI_LR_1000': 21,
+				 'DTI_LR_2000': 31,
+				 'DTI_LR_3000': 65,
+				 'DTI_BLIP_LR': 7,
+				 'DTI_BLIP_RL': 7,
                  'SCOUT': 9
                 }
 
     # Check whether they have right numbers
     for modality, (modalityLocation, fileCount) in zip(subjClass.modalityMapping, subjClass.dirDicomNum):
         if checkList[modality] != fileCount:
-            print '{modality} numbers does not seem right !  : {fileCount}'.format(
+            print('{modality} numbers does not seem right !  : {fileCount}'.format(
                     modality=modality,
-                    fileCount=fileCount)
-            if re.search('[yY]|[yY][Ee][Ss]',raw_input('\tCheck ? [ Y / N ] : ')):
-                print '\tOkay !'
+                    fileCount=fileCount))
+            if re.search('[yY]|[yY][Ee][Ss]',input('\tCheck ? [ Y / N ] : ')):
+                print('\tOkay !')
             else:
-                print '\tExit due to unmatching file number'
+                print('\tExit due to unmatching file number')
                 sys.exit(0)
         else:
-            print 'Correct dicom number - \t {modality} : {fileCount}'.format(
+            print('Correct dicom number - \t {modality} : {fileCount}'.format(
                    modality=modality,
-                   fileCount=fileCount)
+                   fileCount=fileCount))
 
 
 def executeCopy(subjClass):
-    print '-----------------'
-    print 'Copying', subjClass.koreanName
-    print '-----------------'
+    print('-----------------')
+    print('Copying', subjClass.koreanName)
+    print('-----------------')
 
     totalNum = subjClass.allDicomNum
     accNum = 0
@@ -203,8 +218,8 @@ def processDB(DataBaseAddress):
         df['koreanName'] = df.koreanName.str.encode('utf-8')
         df['note'] = df.note.str.encode('utf-8')
 
-        print 'df in processDf first parag'
-        print df
+        print('df in processDf first parag')
+        print(df)
 
     else:
         df = pd.DataFrame.from_dict({ None: {
@@ -302,8 +317,8 @@ def server_connect(server, data_from):
     ssh.connect(server, username=username, password=password)
 
     with SCPClient(ssh.get_transport()) as scp:
-        print 'Connected to {server} and copying data'.format(server=server)
-        print '\t',data_from,'to',server+'@'+data_to
+        print('Connected to {server} and copying data'.format(server=server))
+        print('\t',data_from,'to',server+'@'+data_to)
         scp.put(data_from, data_to, recursive=True, preserve_times=True)
 
 
@@ -326,23 +341,22 @@ if __name__ == '__main__':
     parser.add_argument(
         '-h', '--hddDir',
         help='Location of external drive to search for new data. Eg) /Volumes/20160420',
-        default='/media/MRI_cohort',)  #change this later TW
-    usbLogFile = join(args.hddDir, 'log.xls') #change this later TW
+        default='/media/MRI_cohort',) 
 
     parser.add_argument(
         '-b', '--backupDir',
         help='Location of data storage root. Default : "/volumes/CCNC_MRI/CCNC_MRI_3T"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T",) #change this later TW
+        default='/volume/CCNC_MRI/BCS_MRI',)
 
     parser.add_argument(
         '-d', '--database',
         help='Location of database file. Default : "/volumes/CCNC_MRI/CCNC_MRI_3T/database/database.xls"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T/database/database.xls",) #change this later  TW
+        default='/volume/CCNC_MRI/BCS_MRI/database/database_bcs.xlsx',) 
 
     parser.add_argument(
         '-s', '--spreadsheet',
         help='Location of output excel file. Default : "/ccnc/MRIspreadsheet/MRI.xls"',
-        default="/volume/CCNC_MRI/CCNC_MRI_3T/MRIspreadsheet/MRI.xls",) #change this later TW
+        default="/volume/CCNC_MRI/BCS_MRI/MRI.xls",) #change this later TW
 
     parser.add_argument(
         '-f', '--freesurfer',
@@ -374,9 +388,9 @@ if __name__ == '__main__':
         log_df = copiedDirectoryCheck(args.backUpFrom,
                                      log_file_in_hdd)
         inputDirs, log_df_updated = findNewDirs(backUpFrom,
-                                                logDf)
+                                                log_df)
         log_df_updated.to_excel(log_file_in_hdd,'Sheet1')
-        if newDirectoryList == []:
+        if inputDirs == []:
             sys.exit('Everything have been backed up !')
 
         backUp(inputDirs, 

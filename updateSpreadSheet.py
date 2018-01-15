@@ -41,7 +41,7 @@ def main(study, database, target):
  #   print 'finished'
 
 def styleUpdate(target):
-    print target
+    print(target)
     rb = open_workbook(target)
     wb = copy(rb)
 
@@ -172,7 +172,7 @@ def updateSpreadSheet(df,target,divideBy):
 
     for group,dataFrame in groupbyGroup:
 
-        print group
+        print(group)
         dataFrame = dataFrame.sort('folderName')
         dataFrame.to_excel(writer,group)
 
@@ -199,5 +199,5 @@ if __name__=='__main__':
             
 
     args = parser.parse_args()
-    print args.study
+    print(args.study)
     main(args.study, args.database, args.outExcel)
