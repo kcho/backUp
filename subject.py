@@ -2,7 +2,7 @@
 '''
 # Back up data and forms a database from the MRI data
 # Created by Kang Ik Kevin Cho
-# Contributors: Dahye Stella Bae, Eunseo Cho
+# Contributors: Yoobin Kwak, Takwan Kim, Dahye Stella Bae, Eunseo Cho
 '''
 from __future__ import division
 import os
