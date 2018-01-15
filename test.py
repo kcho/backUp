@@ -12,6 +12,8 @@ import pandas as pd
 #import freesurfer_summary
 import numpy as np
 from backUp import *
+import subject as subj
+import subject
 
 
 folder_names_count = {'DTI_BLIP_LR_0011':7,
@@ -59,8 +61,11 @@ modalityCountDict = {'DTI_BLIP_LR': 7,
                         'T1': 224,
                         'T2': 224}
 
-class subject(object):
-    def __init__(self):
+
+# Original subject
+# subjClass = subj.subject(newDirectory, backUpTo)
+class subject(subj.subject):
+    def __init__(self, subjectDir, dbLoc):
         self.location = abspath('TEST')
         get_dicomDirs = lambda name,num: ['{}/{}/{}/{}.dcm'.format(self.location, 'KANG_IK_CHO_77777777', name, x) for x in np.arange(num)]
         dicomDirDict = {}
@@ -103,11 +108,21 @@ class subject(object):
 
 if __name__ == '__main__':
     shutil.rmtree('TEST')
+    shutil.rmtree('TEST_backUp')
+    os.mkdir('TEST_backUp')
     os.mkdir('TEST')
     os.mkdir('TEST/KANG_IK_CHO_77777777')
-    subjectClass = subject()
+    backUpTo = 'TEST_backUp'
+    DataBaseAddress = 'database.xlsx'
+    spreadsheet = 'spreadsheet.xlsx'
 
-    for modality_raw_dir, dicoms in subjectClass.dicomDirs.items():
+
+    get_dicomDirs = lambda name,num: ['{}/{}/{}/{}.dcm'.format('TEST', 'KANG_IK_CHO_77777777', name, x) for x in np.arange(num)]
+    dicomDirDict = {}
+    for name, num in folder_names_count.items():
+        dicomDirDict[join('TEST', 'KANG_IK_CHO_77777777', name)] = get_dicomDirs(name, num)
+
+    for modality_raw_dir, dicoms in dicomDirDict.items():
         print(modality_raw_dir)
         os.mkdir(modality_raw_dir)
         for j in dicoms:
@@ -121,13 +136,14 @@ if __name__ == '__main__':
     if inputDirs == []:
         sys.exit('Everything have been backed up !')
 
-    backUpTo = 'TEST_backUp'
-    DataBaseAddress = 'database.xlsx'
-    spreadsheet = 'spreadsheet.xlsx'
 
     subjectClassList = []
     for newDirectory in inputDirs:
-        subjClass = subject()
+        dicomSubjectDir_class = subj.dicomSubjectDir(newDirectory)
+        print(dicomSubjectDir_class)
+
+        subjClass = subject(newDirectory, backUpTo)
+        print(dir(subjClass))
         #checkFileNumbers(subjClass)
         subjectClassList.append(subjClass)
 
@@ -138,6 +154,7 @@ if __name__ == '__main__':
         dbDf = processDB(DataBaseAddress)
 
         newDf = pd.concat([dbDf, subjDf]).reset_index()
+        print(subjDf)
         newDf = newDf[[ u'koreanName',  
                         u'subjectName',
                         u'subjectInitial',

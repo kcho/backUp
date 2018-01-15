@@ -6,41 +6,53 @@
 '''
 from __future__ import division
 import os
+from os.path import basename, join, isdir, dirname, abspath
 import dicom
 import re
 import pandas as pd
 import getpass
 
 from progressbar import AnimatedMarker,ProgressBar,Percentage,Bar
-class subject(object):
-    def __init__(self, subjectDir, dbLoc):
-        self.location = subjectDir
 
-        dicomDirDict = {}
+class dicomSubjectDir:
+    def __init__(self, subjectDir):
+        self.location = abspath(subjectDir)
 
-        pbar = ProgressBar()
+        # Search for dicoms
+        dicoms = []
         for root, dirs, files in os.walk(self.location):
-            dicoms = []
-            for oneFile, i in zip(files, pbar(range(6000))):
+            for oneFile in files:
                 if re.search('(dcm|ima)', oneFile, re.IGNORECASE):
                     dicoms.append(os.path.join(root,oneFile))
-            if not dicoms == [] : dicomDirDict[root] = dicoms
 
-        self.dicomDirs = dicomDirDict
-        self.dirs = dicomDirDict.keys()
-        #self.allDicoms = reduce(lambda x, y: x + y, dicomDirDict.values())
-        #self.allDicomNum = len(self.allDicoms)
-        self.dirDicomNum = [(x,len(y)) for (x,y) in dicomDirDict.items()]
-        self.firstDicom = next(iter(self.dicomDirs.values()))[0]
+        # Dicom directory names
+        dicomDirs = set([dirname(x) for x in dicoms])
+        self.dirs = dicomDirs
         self.modalityMapping = [modalityMapping(x) for x in self.dirs]
+
+        # Dictionary
+        dicomDirDict = {}
+        for dicomDir in dicomDirs:
+            dicom_under_dicomDir = [x for x in dicoms if x.startswith(dicomDir)]
+            dicomDirDict[dicomDir] = dicom_under_dicomDir
+        self.dicomDirs = dicomDirDict
+        self.dirDicomNum = [(x,len(y)) for (x,y) in dicomDirDict.items()]
         self.modalityDicomNum = dict(zip(self.modalityMapping, [x[1] for x in self.dirDicomNum]))
 
+        # Read first dicom
+        #self.firstDicom = dicoms[0]
+        self.firstDicom = 'dicom_tmp.IMA'
+
+class subject(dicomSubjectDir):
+    def __init__(self, subjectDir):
+        super().__init__(subjectDir)
         ds = dicom.read_file(self.firstDicom)
         self.age = re.search('^0(\d{2})Y',ds.PatientAge).group(1)
         self.dob = ds.PatientBirthDate
         self.id = ds.PatientID
-        self.surname = ds.PatientName.split('^')[0]
-        self.name = ds.PatientName.split('^')[1]
+        self.surname = ds.PatientName.family_name
+        self.name = ds.PatientName.given_name
+
         try:
             self.fullname = ''.join([x[0].upper()+x[1:].lower() for x in [self.surname, self.name.split(' ')[0], self.name.split(' ')[1]]])
             self.initial = self.surname[0]+''.join([x[0] for x in self.name.split(' ')])
@@ -50,40 +62,42 @@ class subject(object):
         
         self.sex = ds.PatientSex
         self.date = ds.StudyDate
-        self.experimenter = getpass.getuser()
 
+class subject_extra(subject):
+    def __init__(self, subjectDir):
+        super().__init__(subjectDir)
+        self.experimenter = getpass.getuser()
         print('Now collecting information for')
         print('==============================')
         print('\n\t'.join([self.location, self.fullname, self.initial, self.id, self.dob, 
                            self.date, self.sex, ', '.join(self.modalityMapping),
                            'by ' + self.experimenter]))
         print('==============================')
-
         self.koreanName = input('Korean name  ? eg. 김민수: ')
         self.note = input('Any note ? : ')
         self.group = input('Group ? : ')
-        self.numberForGroup = maxGroupNum(os.path.join(dbLoc, self.group))
         self.study = input('Study name ? : ')
-        self.timeline = input('baseline or follow up ? eg) baseline, 6mfu, 1yfu, 2yfu : ') #bienseo: Solve unicode-error problems
-        
-        #bienseo: Classify timeline(baseline or follow up)
+        self.timeline = input('baseline or follow up ? eg) baseline, 6mfu, 1yfu, 2yfu : ')
 
+class subject_full(subject_extra):
+    def __init__(self, subjectDir, dbLoc):
+        self.numberForGroup = maxGroupNum(join(dbLoc, self.group))
         if self.timeline != 'baseline':
-            df = pd.ExcelFile(os.path.join(dbLoc,'database','database.xls')).parse(0)
+            df = pd.ExcelFile(join(dbLoc,'database','database.xls')).parse(0)
            
             self.folderName = df.ix[(df.timeline=='baseline') & (df.patientNumber == int(self.id)), 'folderName'].values.tolist()[0]
             #bienseo: Show back up folder name
             print('\n\n       Now Back up to       ' + self.folderName + '\n\n')
-            self.targetDir = os.path.join(dbLoc,
-                                          self.group,
-                                          self.folderName,
-                                          self.timeline)
+            self.targetDir = join(dbLoc,
+                                  self.group,
+                                  self.folderName,
+                                  self.timeline)
         else:
             self.folderName = self.group + self.numberForGroup + '_' + self.initial
-            self.targetDir = os.path.join(dbLoc,
-                                          self.group,
-                                          self.folderName,
-                                          self.timeline)    
+            self.targetDir = join(dbLoc,
+                                  self.group,
+                                  self.folderName,
+                                  self.timeline)    
 
 
 def modalityMapping(directory):
