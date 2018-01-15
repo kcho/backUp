@@ -7,9 +7,6 @@ import argparse
 import textwrap
 import pickle
 import pandas as pd
-#import motion_extraction
-#import freesurfer
-#import freesurfer_summary
 import numpy as np
 from backUp import *
 import subject as subj
@@ -41,12 +38,6 @@ folder_names_modality = {'DTI_BLIP_LR_0011':'DTI_BLIP_LR',
                       'SCOUT_HEAD_32CH_0001':'SCOUT',
                       'T1_0002':'T1',
                       'T2_0003':'T2'}
-
-
-
-
-
-
 
 modalityCountDict = {'DTI_BLIP_LR': 7,
                         'DTI_BLIP_RL': 7,
@@ -98,6 +89,7 @@ class subject(subj.subject):
         #self.sex = 'M'
         #self.date = '20180111'
         #self.experimenter = 'kcho'
+        self.firstDicom = 'dicom_tmp.IMA' # remove this later
         self.experimenter = 'kcho'
         self.koreanName = '김민수'
         self.note = 'ha'

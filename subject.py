@@ -40,8 +40,7 @@ class dicomSubjectDir:
         self.modalityDicomNum = dict(zip(self.modalityMapping, [x[1] for x in self.dirDicomNum]))
 
         # Read first dicom
-        #self.firstDicom = dicoms[0]
-        self.firstDicom = 'dicom_tmp.IMA' # remove this later
+        self.firstDicom = dicoms[0]
 
 class subject(dicomSubjectDir):
     def __init__(self, subjectDir):
