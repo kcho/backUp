@@ -12,6 +12,42 @@ import re
 import pandas as pd
 import getpass
 
+def bcsModalityMapping(directory):
+    t1 = re.compile(r'^t1_\d{4}',re.IGNORECASE)
+    t2 = re.compile(r'^t2_\d{4}',re.IGNORECASE)
+    scout = re.compile(r'scout',re.IGNORECASE)
+    rest = re.compile(r'rest\S*lr_sbref_\d{4}',re.IGNORECASE)
+    restRef = re.compile(r'rest\S*lr(_sbref){2}',re.IGNORECASE)
+    restBlipRL = re.compile(r'rest\S*blip_rl',re.IGNORECASE)
+    restBlipLR = re.compile(r'rest\S*blip_lr',re.IGNORECASE)
+    dti3 = re.compile(r'dti\S*B30',re.IGNORECASE)
+    dti2 = re.compile(r'dti\S*B20',re.IGNORECASE)
+    dti1 = re.compile(r'dti\S*B10',re.IGNORECASE)
+    dtiBlipRL = re.compile(r'dti\S*rl_\d{4}',re.IGNORECASE)
+    dtiBlipLR = re.compile(r'dti\S*lr_\d{4}',re.IGNORECASE)
+
+    correct_modality_re_dict = {'T1':t1,
+                                'T2':t2,
+                                'SCOUT':scout,
+                                'REST':rest,
+                                'REST_REF':restRef,
+                                'REST_BLIP_RL':restBlipRL,
+                                'REST_BLIP_LR':restBlipLR,
+                                'DTI_3000':dti3,
+                                'DTI_2000':dti2,
+                                'DTI_1000':dti1,
+                                'DTI_BLIP_RL':dtiBlipRL,
+                                'DTI_BLIP_LR':dtiBlipLR}
+
+    for modality_name, re_compile in correct_modality_re_dict.items():
+        modality_basename = basename(directory)
+        try:
+            matchingSource = re_compile.search(modality_basename).group(0)
+            return modality_name
+        except:
+            pass
+    return directory
+
 class dicomSubjectDir:
     def __init__(self, subjectDir):
         self.location = abspath(subjectDir)
@@ -106,44 +142,6 @@ class subject_full(subject_extra):
                                   self.group,
                                   self.folderName,
                                   self.timeline)    
-
-
-def bcsModalityMapping(directory):
-    t1 = re.compile(r'^t1_\d{4}',re.IGNORECASE)
-    t2 = re.compile(r'^t2_\d{4}',re.IGNORECASE)
-    scout = re.compile(r'scout',re.IGNORECASE)
-    rest = re.compile(r'rest\S*lr_sbref_\d{4}',re.IGNORECASE)
-    restRef = re.compile(r'rest\S*lr(_sbref){2}',re.IGNORECASE)
-    restBlipRL = re.compile(r'rest\S*blip_rl',re.IGNORECASE)
-    restBlipLR = re.compile(r'rest\S*blip_lr',re.IGNORECASE)
-    dti3 = re.compile(r'dti\S*B30',re.IGNORECASE)
-    dti2 = re.compile(r'dti\S*B20',re.IGNORECASE)
-    dti1 = re.compile(r'dti\S*B10',re.IGNORECASE)
-    dtiBlipRL = re.compile(r'dti\S*rl_\d{4}',re.IGNORECASE)
-    dtiBlipLR = re.compile(r'dti\S*lr_\d{4}',re.IGNORECASE)
-
-    correct_modality_re_dict = {'T1':t1,
-                                'T2':t2,
-                                'SCOUT':scout,
-                                'REST':rest,
-                                'REST_REF':restRef,
-                                'REST_BLIP_RL':restBlipRL,
-                                'REST_BLIP_LR':restBlipLR,
-                                'DTI_3000':dti3,
-                                'DTI_2000':dti2,
-                                'DTI_1000':dti1,
-                                'DTI_BLIP_RL':dtiBlipRL,
-                                'DTI_BLIP_LR':dtiBlipLR}
-
-    for modality_name, re_compile in correct_modality_re_dict.items():
-        modality_basename = basename(directory)
-        try:
-            matchingSource = re_compile.search(modality_basename).group(0)
-            return modality_name
-        except:
-            pass
-    return directory
-
 
 def maxGroupNum(backUpTo):
     maxNumPattern=re.compile('\d+')
