@@ -28,7 +28,7 @@ class dicomSubjectDir:
         # Dicom directory names
         dicomDirs = set([dirname(x) for x in dicoms])
         self.dirs = dicomDirs
-        self.modalityMapping = [modalityMapping(x) for x in self.dirs]
+        self.modalityMapping = [bcsModalityMapping(x) for x in self.dirs]
 
         # Dictionary
         dicomDirDict = {}
@@ -45,7 +45,10 @@ class dicomSubjectDir:
 class subject(dicomSubjectDir):
     def __init__(self, subjectDir):
         super().__init__(subjectDir)
-        ds = dicom.read_file(self.firstDicom)
+        try:
+            ds = dicom.read_file(self.firstDicom)
+        except: #for test
+            ds = dicom.read_file('dicom_tmp.IMA')
         self.age = re.search('^0(\d{2})Y',ds.PatientAge).group(1)
         self.dob = ds.PatientBirthDate
         self.id = ds.PatientID
@@ -91,7 +94,7 @@ class subject_full(subject_extra):
             self.folderName = df.iloc[(df.timeline=='baseline') & (df.patientNumber == int(self.id)), 
                                       'folderName'].values.tolist()[0]
 
-            print('\n\n\t\tNow Backing up to {}\n\n'.format(self.folderName)
+            print('\n\n\t\tNow Backing up to {}\n\n'.format(self.folderName))
             self.targetDir = join(dbLoc,
                                   self.group,
                                   self.folderName,
@@ -105,7 +108,7 @@ class subject_full(subject_extra):
                                   self.timeline)    
 
 
-def modalityMapping(directory):
+def bcsModalityMapping(directory):
     t1 = re.compile(r'^t1_\d{4}',re.IGNORECASE)
     t2 = re.compile(r'^t2_\d{4}',re.IGNORECASE)
     scout = re.compile(r'scout',re.IGNORECASE)
@@ -130,12 +133,12 @@ def modalityMapping(directory):
                                 'DTI_2000':dti2,
                                 'DTI_1000':dti1,
                                 'DTI_BLIP_RL':dtiBlipRL,
-                                'DTI_BLIP_LR'dtiBlipLR}
+                                'DTI_BLIP_LR':dtiBlipLR}
 
-    for modality_name, re_compile correct_modality_re_dict.iter():
-        basename = basename(directory)
+    for modality_name, re_compile in correct_modality_re_dict.items():
+        modality_basename = basename(directory)
         try:
-            matchingSource = re_compile.search(basename).group(0)
+            matchingSource = re_compile.search(modality_basename).group(0)
             return modality_name
         except:
             pass
